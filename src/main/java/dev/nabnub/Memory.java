@@ -1,9 +1,10 @@
 package dev.nabnub;
 
 public class Memory {
-    private final byte[] memory = new byte[4096]; //Chip 8 memory
-    private short I;                              //Index register
-    private short pc = 0x200;                     //Program counter
+    private final byte[] memory;                    //Chip 8 memory
+    private final int MEMORY_SIZE = 4096;
+    private final int PROGRAM_START = 0x200;
+    private final int FONT_START = 0x050;
 
     private static final byte[] FONT = {
             (byte) 0xF0, (byte) 0x90, (byte) 0x90, (byte) 0x90, (byte) 0xF0, // 0
@@ -24,15 +25,17 @@ public class Memory {
             (byte) 0xF0, (byte) 0x80, (byte) 0xF0, (byte) 0x80, (byte) 0x80  // F
     };
 
-    public short getPc() {
-        return pc;
+    public Memory() {
+        memory = new byte[MEMORY_SIZE];
+        loadFonts();
     }
 
-    public void setPc(short pc) {
-        this.pc = pc;
+    public int getProgramStart() {
+        return PROGRAM_START;
     }
 
-
-
+    private void loadFonts() {
+        System.arraycopy(FONT, 0, memory, FONT_START, FONT.length);
+    }
 
 }

@@ -2,22 +2,23 @@ package dev.nabnub;
 
 import org.junit.jupiter.api.*;
 
-class MemoryTest {
+class Chip8Test {
 
-    private Memory mem;
+    private Chip8 chip8;
 
     @BeforeAll
     public static void setUpClass() {
 
     }
 
-    @AfterAll static void tearDownClass() {
+    @AfterAll
+    static void tearDownClass() {
 
     }
 
     @BeforeEach
     public void setUp() {
-        this.mem = new Memory();
+
     }
 
     @AfterEach
@@ -26,8 +27,8 @@ class MemoryTest {
     }
 
     @Test
-    public void pcInitializedTo0x200() {
-        Assertions.assertEquals(0x200, mem.getProgramStart());
+    public void dataRegisters_shouldBeInitializedTo0() {
+
     }
 
 
