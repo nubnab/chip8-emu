@@ -15,6 +15,7 @@ public class Chip8 {
     private int cpuFreq;
     private long cpuCycleTime;
     private short currentInstruction;
+    private int vAddress;
 
     private Memory memory;
     private Display display;
@@ -66,8 +67,43 @@ public class Chip8 {
     private void decodeAndExecute() {
         int firstNibble = (currentInstruction & 0xFFFF) >>> 12;
         switch (firstNibble) {
+            case 0x0:
+                //clear display
+                break;
+            case 0x1:
+                //Jump, ensure PC does not go up
+                this.PC = (short) (currentInstruction & 0x0FFF);
+                break;
+            case 0x6:
+                //set Vx
+                vAddress = (currentInstruction & 0x0F00) >> 8;
+                V[vAddress] = (byte) (currentInstruction & 0xFF);
+                break;
+            case 0x7:
+                //Add to Vx
+                vAddress = (currentInstruction & 0x0F00) >> 8;
+                V[vAddress] = (byte) (V[vAddress] + (currentInstruction & 0xFF));
+                break;
             case 0xA:
-                System.out.println("works");
+                //test if lower 12bits are affected by signed/unsigned
+                I = (short) (currentInstruction & 0x0FFF);
+                break;
+            case 0xD:
+                //Display
+                int x = (currentInstruction & 0x0F00) >> 8;
+                int y = (currentInstruction & 0x00F0) >> 4;
+                int n = currentInstruction & 0x000F;
+                short getVx = V[x];
+                short getVy = V[y];
+                int xCoord = getVx % 64;
+                int yCoord = getVy % 32;
+                V[0xF] = 0;
+
+                for(int row = 0; row < n; row++) {
+                    int spriteByte =  memory.getMemory()[I + row] & 0xFF;
+                    
+
+                }
                 break;
             default:
         }
