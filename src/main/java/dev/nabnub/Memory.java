@@ -38,4 +38,10 @@ public class Memory {
         System.arraycopy(FONT, 0, memory, FONT_START, FONT.length);
     }
 
+    public byte[] getMemory() {
+        return memory;
+    }
+
+
+
 }
