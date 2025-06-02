@@ -13,6 +13,7 @@ public class Display extends JPanel {
         pixels = new boolean[width][height];
         setPreferredSize(new Dimension(width * scale, height * scale));
         setBackground(Color.BLACK);
+        //setBackground(new Color(153, 103, 0));
     }
 
     public boolean togglePixel(int x, int y) {
@@ -35,7 +36,8 @@ public class Display extends JPanel {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.setColor(Color.WHITE);
+        //g.setColor(new Color(255, 204, 0));
+         g.setColor(Color.WHITE);
 
         for(int x = 0; x < width; x++) {
             for(int y = 0; y < height; y++) {
@@ -44,6 +46,14 @@ public class Display extends JPanel {
                 }
             }
         }
+
+        //g.setColor(new Color(30, 30, 30));
+        //for (int x = 0; x <= width; x++) {
+        //    g.drawLine(x * scale, 0, x * scale, height * scale);
+        //}
+        //for (int y = 0; y <= height; y++) {
+        //    g.drawLine(0, y * scale, width * scale, y * scale);
+        //}
 
     }
 
