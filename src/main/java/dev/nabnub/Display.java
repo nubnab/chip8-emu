@@ -5,7 +5,7 @@ import java.awt.*;
 
 public class Display extends JPanel {
     private boolean[][] pixels;
-    private int scale = 10; //unused currently
+    private int scale = 10;
     private int width = 64;
     private int height = 32;
 

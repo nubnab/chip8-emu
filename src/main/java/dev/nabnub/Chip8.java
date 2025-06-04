@@ -68,9 +68,7 @@ public class Chip8 {
         int firstNibble = (currentInstruction & 0xFFFF) >>> 12;
         switch (firstNibble) {
             case 0x0:
-                //clear display
                 display.clear();
-                System.out.println();
                 break;
             case 0x1:
                 //Jump, ensure PC does not go up
@@ -99,13 +97,13 @@ public class Chip8 {
                 int baseY = V[y] % 32;
                 V[0xF] = 0;
 
-                for(int row = 0; row < n; row++) {
+                for(int row = 0; row < n && (baseY + row) < 32; row++) {
                     int spriteByte = memory.getMemory()[I + row] & 0xFF;
 
-                    for(int col = 0; col < 8; col++) {
+                    for(int col = 0; col < 8 && (baseX + col) < 64; col++) {
                         if((spriteByte & (0x80 >> col)) != 0) {
-                            int pixelX = (baseX + col) % 64;
-                            int pixelY = (baseY + row) % 32;
+                            int pixelX = (baseX + col);
+                            int pixelY = (baseY + row);
                             boolean wasPixelOn = display.togglePixel(pixelX, pixelY);
                             if(wasPixelOn) {
                                 V[0xF] = 1;
