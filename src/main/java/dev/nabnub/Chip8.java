@@ -171,13 +171,19 @@ public class Chip8 {
                         //Set Vx = Vx - Vy, set VF = NOT borrow ( 0 borrow, 1 otherwise )
                         vAddressX = secondNibble;
                         vAddressY = thirdNibble;
-                        int sumSubtraction = (V[vAddressX] & 0xFF) - (V[vAddressY] & 0xFF);
+                        int sumSubtractionXY = (V[vAddressX] & 0xFF) - (V[vAddressY] & 0xFF);
                         V[0xF] = (byte) ((V[vAddressX] & 0xFF) > (V[vAddressY] & 0xFF) ? 1 : 0); //Set borrow flag
-                        V[vAddressX] = (byte) (sumSubtraction & 0xFF);
+                        V[vAddressX] = (byte) (sumSubtractionXY & 0xFF);
                         break;
                     case 0x6:
                         break;
                     case 0x7:
+                        //Set Vx = Vy - Vx, set VF = NOT borrow ( 1 borrow, 0 otherwise )
+                        vAddressX = secondNibble;
+                        vAddressY = thirdNibble;
+                        int sumSubtractionYX = (V[vAddressY] & 0xFF) - (V[vAddressX] & 0xFF);
+                        V[0xF] = (byte) ((V[vAddressY] & 0xFF) > (V[vAddressX] & 0xFF) ? 1 : 0); //Set borrow flag
+                        V[vAddressX] = (byte) (sumSubtractionYX & 0xFF);
                         break;
                     case 0xE:
                     default:
