@@ -72,6 +72,7 @@ public class Chip8 {
         int fourthNibble = currentInstruction & 0x000F;
         int thirdAndFourthNibble = currentInstruction & 0x00FF;
         int secondThirdAndFourthNibble = currentInstruction & 0x0FFF;
+
         switch (firstNibble) {
             case 0x0:
                 switch (fourthNibble) {
@@ -131,6 +132,32 @@ public class Chip8 {
                 vAddressX = secondNibble;
                 V[vAddressX] = (byte) (V[vAddressX] + (currentInstruction & 0xFF));
                 break;
+            case 0x8:
+                switch(fourthNibble) {
+                    case 0x0:
+                        //Sets Vx = Vy
+                        vAddressX = secondNibble;
+                        vAddressY = thirdNibble;
+                        V[vAddressX] = V[vAddressY];
+                        break;
+                    case 0x1:
+                        break;
+                    case 0x2:
+                        break;
+                    case 0x3:
+                        break;
+                    case 0x4:
+                        break;
+                    case 0x5:
+                        break;
+                    case 0x6:
+                        break;
+                    case 0x7:
+                        break;
+                    case 0xE:
+                    default:
+                }
+                break;
             case 0x9:
                 //Skip next if Vx != Vy
                 vAddressX = secondNibble;
@@ -140,6 +167,7 @@ public class Chip8 {
                 }
                 break;
             case 0xA:
+                //Set I = nnn
                 //test if lower 12bits are affected by signed/unsigned
                 I = (short) secondThirdAndFourthNibble;
                 break;
