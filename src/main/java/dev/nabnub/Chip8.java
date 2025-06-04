@@ -87,6 +87,13 @@ public class Chip8 {
                 break;
             case 0x1:
                 //Jump, ensure PC does not go up
+                //TODO: needs testing
+                this.PC = (short) secondThirdAndFourthNibble;
+                break;
+            case 0x2:
+                //Call subroutine at nnn
+                push(this.PC);
+                //TODO: needs testing
                 this.PC = (short) secondThirdAndFourthNibble;
                 break;
             case 0x6:
@@ -96,6 +103,7 @@ public class Chip8 {
                 break;
             case 0x7:
                 //Add to Vx
+                //TODO: needs testing
                 vAddress = secondNibble;
                 V[vAddress] = (byte) (V[vAddress] + (currentInstruction & 0xFF));
                 break;
@@ -138,6 +146,13 @@ public class Chip8 {
             throw new IllegalArgumentException("Register out of range");
         }
         return V[register];
+    }
+
+    private void push(short address) {
+        if (sp > 15) {
+            throw new RuntimeException("Stack overflow");
+        }
+        stack[++sp] = address;
     }
 
     private short pop() {
