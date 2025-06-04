@@ -176,6 +176,10 @@ public class Chip8 {
                         V[vAddressX] = (byte) (sumSubtractionXY & 0xFF);
                         break;
                     case 0x6:
+                        //Set Vx = Vx shift right 1 bit, set VF = 1 if least significant bit = 1
+                        vAddressX = secondNibble;
+                        V[0xF] = (byte) ((V[vAddressX] & 1) == 1 ? 1 : 0);
+                        V[vAddressX] = (byte) ((V[vAddressX] & 0xFF) >>> 1);
                         break;
                     case 0x7:
                         //Set Vx = Vy - Vx, set VF = NOT borrow ( 1 borrow, 0 otherwise )
