@@ -163,11 +163,17 @@ public class Chip8 {
                         //Set Vx = Vx + Vy, set VF = carry ( 1 if sum > 255 / 0xFF )
                         vAddressX = secondNibble;
                         vAddressY = thirdNibble;
-                        int sum = (V[vAddressX] & 0xFF) + (V[vAddressY] & 0xFF);
-                        V[0xF] = (byte) (sum > 0xFF ? 1 : 0); //Set carry flag
-                        V[vAddressX] = (byte) (sum & 0xFF);
+                        int sumAddition = (V[vAddressX] & 0xFF) + (V[vAddressY] & 0xFF);
+                        V[0xF] = (byte) (sumAddition > 0xFF ? 1 : 0); //Set carry flag
+                        V[vAddressX] = (byte) (sumAddition & 0xFF);
                         break;
                     case 0x5:
+                        //Set Vx = Vx - Vy, set VF = NOT borrow ( 0 borrow, 1 otherwise )
+                        vAddressX = secondNibble;
+                        vAddressY = thirdNibble;
+                        int sumSubtraction = (V[vAddressX] & 0xFF) - (V[vAddressY] & 0xFF);
+                        V[0xF] = (byte) ((V[vAddressX] & 0xFF) > (V[vAddressY] & 0xFF) ? 1 : 0); //Set borrow flag
+                        V[vAddressX] = (byte) (sumSubtraction & 0xFF);
                         break;
                     case 0x6:
                         break;
