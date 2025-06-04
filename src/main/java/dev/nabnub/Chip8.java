@@ -15,7 +15,8 @@ public class Chip8 {
     private int cpuFreq;
     private long cpuCycleTime;
     private short currentInstruction;
-    private int vAddress;
+    private int vAddressX;
+    private int vAddressY;
 
     private Memory memory;
     private Display display;
@@ -79,7 +80,6 @@ public class Chip8 {
                         break;
                     case 0xE:
                         //Return from subroutine
-                        //TODO: needs testing
                         this.PC = pop();
                         break;
                     default:
@@ -93,33 +93,40 @@ public class Chip8 {
             case 0x2:
                 //Call subroutine at nnn
                 push(this.PC);
-                //TODO: needs testing
                 this.PC = (short) secondThirdAndFourthNibble;
                 break;
             case 0x3:
                 //TODO: needs testing
-                vAddress = secondNibble;
-                if(V[vAddress] == (byte)(thirdAndFourthNibble)) {
+                vAddressX = secondNibble;
+                if(V[vAddressX] == (byte)(thirdAndFourthNibble)) {
                     incrementPC();
                 }
                 break;
             case 0x4:
                 //TODO: needs testing
-                vAddress = secondNibble;
-                if(V[vAddress] != (byte)(thirdAndFourthNibble)) {
+                vAddressX = secondNibble;
+                if(V[vAddressX] != (byte)(thirdAndFourthNibble)) {
+                    incrementPC();
+                }
+                break;
+            case 0x5:
+                //TODO: needs testing
+                vAddressX = secondNibble;
+                vAddressY = thirdNibble;
+                if(V[vAddressX] == V[vAddressY]) {
                     incrementPC();
                 }
                 break;
             case 0x6:
                 //set Vx
-                vAddress = secondNibble;
-                V[vAddress] = (byte) (currentInstruction & 0xFF);
+                vAddressX = secondNibble;
+                V[vAddressX] = (byte) (currentInstruction & 0xFF);
                 break;
             case 0x7:
                 //Add to Vx
                 //TODO: needs testing
-                vAddress = secondNibble;
-                V[vAddress] = (byte) (V[vAddress] + (currentInstruction & 0xFF));
+                vAddressX = secondNibble;
+                V[vAddressX] = (byte) (V[vAddressX] + (currentInstruction & 0xFF));
                 break;
             case 0xA:
                 //test if lower 12bits are affected by signed/unsigned
