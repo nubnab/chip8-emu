@@ -103,6 +103,13 @@ public class Chip8 {
                     incrementPC();
                 }
                 break;
+            case 0x4:
+                //TODO: needs testing
+                vAddress = secondNibble;
+                if(V[vAddress] != (byte)(thirdAndFourthNibble)) {
+                    incrementPC();
+                }
+                break;
             case 0x6:
                 //set Vx
                 vAddress = secondNibble;
