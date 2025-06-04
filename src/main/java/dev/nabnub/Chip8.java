@@ -160,6 +160,12 @@ public class Chip8 {
                         V[vAddressX] = (byte) (V[vAddressX] ^ V[vAddressY]);
                         break;
                     case 0x4:
+                        //Set Vx = Vx + Vy, set VF = carry ( 1 if sum > 255 / 0xFF )
+                        vAddressX = secondNibble;
+                        vAddressY = thirdNibble;
+                        int sum = (V[vAddressX] & 0xFF) + (V[vAddressY] & 0xFF);
+                        V[0xF] = (byte) (sum > 0xFF ? 1 : 0); //Set carry flag
+                        V[vAddressX] = (byte) (sum & 0xFF);
                         break;
                     case 0x5:
                         break;
