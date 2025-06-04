@@ -96,6 +96,13 @@ public class Chip8 {
                 //TODO: needs testing
                 this.PC = (short) secondThirdAndFourthNibble;
                 break;
+            case 0x3:
+                //TODO: needs testing
+                vAddress = secondNibble;
+                if(V[vAddress] == (byte)(thirdAndFourthNibble)) {
+                    incrementPC();
+                }
+                break;
             case 0x6:
                 //set Vx
                 vAddress = secondNibble;
