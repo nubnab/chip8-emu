@@ -66,38 +66,40 @@ public class Chip8 {
 
     private void decodeAndExecute() {
         int firstNibble = (currentInstruction & 0xFFFF) >>> 12;
+        int secondNibble = (currentInstruction & 0x0F00) >> 8;
+        int thirdNibble = (currentInstruction & 0x00F0) >> 4;
+        int fourthNibble = currentInstruction & 0x000F;
+        int thirdAndFourthNibble = currentInstruction & 0x00FF;
+        int secondThirdAndFourthNibble = currentInstruction & 0x0FFF;
         switch (firstNibble) {
             case 0x0:
                 display.clear();
                 break;
             case 0x1:
                 //Jump, ensure PC does not go up
-                this.PC = (short) (currentInstruction & 0x0FFF);
+                this.PC = (short) secondThirdAndFourthNibble;
                 break;
             case 0x6:
                 //set Vx
-                vAddress = (currentInstruction & 0x0F00) >> 8;
+                vAddress = secondNibble;
                 V[vAddress] = (byte) (currentInstruction & 0xFF);
                 break;
             case 0x7:
                 //Add to Vx
-                vAddress = (currentInstruction & 0x0F00) >> 8;
+                vAddress = secondNibble;
                 V[vAddress] = (byte) (V[vAddress] + (currentInstruction & 0xFF));
                 break;
             case 0xA:
                 //test if lower 12bits are affected by signed/unsigned
-                I = (short) (currentInstruction & 0x0FFF);
+                I = (short) secondThirdAndFourthNibble;
                 break;
             case 0xD:
                 //Display
-                int x = (currentInstruction & 0x0F00) >> 8;
-                int y = (currentInstruction & 0x00F0) >> 4;
-                int n = currentInstruction & 0x000F;
-                int baseX = V[x] % 64;
-                int baseY = V[y] % 32;
+                int baseX = V[secondNibble] % 64;
+                int baseY = V[thirdNibble] % 32;
                 V[0xF] = 0;
 
-                for(int row = 0; row < n && (baseY + row) < 32; row++) {
+                for(int row = 0; row < fourthNibble && (baseY + row) < 32; row++) {
                     int spriteByte = memory.getMemory()[I + row] & 0xFF;
 
                     for(int col = 0; col < 8 && (baseX + col) < 64; col++) {
@@ -110,7 +112,6 @@ public class Chip8 {
                             }
                         }
                     }
-
                 }
                 display.repaint();
                 break;
