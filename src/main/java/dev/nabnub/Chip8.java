@@ -96,6 +96,7 @@ public class Chip8 {
                 this.PC = (short) secondThirdAndFourthNibble;
                 break;
             case 0x3:
+                //Skip next if Vx = nn
                 //TODO: needs testing
                 vAddressX = secondNibble;
                 if(V[vAddressX] == (byte)(thirdAndFourthNibble)) {
@@ -103,6 +104,7 @@ public class Chip8 {
                 }
                 break;
             case 0x4:
+                //Skip next if Vx != nn
                 //TODO: needs testing
                 vAddressX = secondNibble;
                 if(V[vAddressX] != (byte)(thirdAndFourthNibble)) {
@@ -110,6 +112,7 @@ public class Chip8 {
                 }
                 break;
             case 0x5:
+                //Skip next if Vx = Vy
                 //TODO: needs testing
                 vAddressX = secondNibble;
                 vAddressY = thirdNibble;
@@ -127,6 +130,14 @@ public class Chip8 {
                 //TODO: needs testing
                 vAddressX = secondNibble;
                 V[vAddressX] = (byte) (V[vAddressX] + (currentInstruction & 0xFF));
+                break;
+            case 0x9:
+                //Skip next if Vx != Vy
+                vAddressX = secondNibble;
+                vAddressY = thirdNibble;
+                if(V[vAddressX] != V[vAddressY]) {
+                    incrementPC();
+                }
                 break;
             case 0xA:
                 //test if lower 12bits are affected by signed/unsigned
