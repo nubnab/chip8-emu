@@ -66,6 +66,7 @@ public class Chip8 {
     }
 
     private void decodeAndExecute() {
+        //TODO: Refactor
         int firstNibble = (currentInstruction & 0xFFFF) >>> 12;
         int secondNibble = (currentInstruction & 0x0F00) >> 8;
         int thirdNibble = (currentInstruction & 0x00F0) >> 4;
@@ -147,6 +148,9 @@ public class Chip8 {
                         V[vAddressX] = (byte) (V[vAddressX] | V[vAddressY]);
                         break;
                     case 0x2:
+                        vAddressX = secondNibble;
+                        vAddressY = thirdNibble;
+                        V[vAddressX] = (byte) (V[vAddressX] & V[vAddressY]);
                         break;
                     case 0x3:
                         break;
