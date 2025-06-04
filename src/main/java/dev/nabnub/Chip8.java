@@ -9,8 +9,8 @@ public class Chip8 {
     private final byte[] V = new byte[16];          //V0-VF Registers
     private short I;                                //Index Register
     private short PC;                               //Program counter
-    private final short[] stack = new short[16];
-    private short sp;                               //Stack pointer
+    private short[] stack = new short[16];
+    private byte sp;                               //Stack pointer
     private byte delayTimer;
     private int cpuFreq;
     private long cpuCycleTime;
@@ -73,7 +73,17 @@ public class Chip8 {
         int secondThirdAndFourthNibble = currentInstruction & 0x0FFF;
         switch (firstNibble) {
             case 0x0:
-                display.clear();
+                switch (fourthNibble) {
+                    case 0x0:
+                        display.clear();
+                        break;
+                    case 0xE:
+                        //Return from subroutine
+                        //TODO: needs testing
+                        this.PC = pop();
+                        break;
+                    default:
+                }
                 break;
             case 0x1:
                 //Jump, ensure PC does not go up
@@ -128,6 +138,13 @@ public class Chip8 {
             throw new IllegalArgumentException("Register out of range");
         }
         return V[register];
+    }
+
+    private short pop() {
+        if (sp < 0) {
+            throw new RuntimeException("Stack underflow");
+        }
+        return stack[sp--];
     }
 
 }
