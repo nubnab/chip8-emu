@@ -178,7 +178,7 @@ public class Chip8 {
                     case 0x6:
                         //Set Vx = Vx shift right 1 bit, set VF = 1 if least significant bit = 1
                         vAddressX = secondNibble;
-                        V[0xF] = (byte) ((V[vAddressX] & 1) == 1 ? 1 : 0);
+                        V[0xF] = (byte) (V[vAddressX] & 1);
                         V[vAddressX] = (byte) ((V[vAddressX] & 0xFF) >>> 1);
                         break;
                     case 0x7:
@@ -190,6 +190,10 @@ public class Chip8 {
                         V[vAddressX] = (byte) (sumSubtractionYX & 0xFF);
                         break;
                     case 0xE:
+                        //Set Vx = Vx shift left 1 bit, set VF = 1 if most significant bit = 1
+                        vAddressX = secondNibble;
+                        V[0xF] = (byte) ((V[vAddressX] >> 7) & 1);
+                        V[vAddressX] = (byte) ((V[vAddressX] & 0xFF) << 1);
                     default:
                 }
                 break;
