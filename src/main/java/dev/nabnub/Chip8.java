@@ -141,6 +141,10 @@ public class Chip8 {
                         V[vAddressX] = V[vAddressY];
                         break;
                     case 0x1:
+                        // Sets Vx = Vx OR Vy
+                        vAddressX = secondNibble;
+                        vAddressY = thirdNibble;
+                        V[vAddressX] = (byte) (V[vAddressX] | V[vAddressY]);
                         break;
                     case 0x2:
                         break;
