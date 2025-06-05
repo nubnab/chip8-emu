@@ -41,7 +41,6 @@ public class Memory {
     public byte[] getMemory() {
         return memory;
     }
-
-
+    
 
 }

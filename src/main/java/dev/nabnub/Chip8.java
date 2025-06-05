@@ -194,6 +194,7 @@ public class Chip8 {
                         vAddressX = secondNibble;
                         V[0xF] = (byte) ((V[vAddressX] >> 7) & 1);
                         V[vAddressX] = (byte) ((V[vAddressX] & 0xFF) << 1);
+                        break;
                     default:
                 }
                 break;
@@ -231,6 +232,17 @@ public class Chip8 {
                     }
                 }
                 display.repaint();
+                break;
+            case 0xF:
+                switch (thirdNibble) {
+                    case 0x5:
+                        short copyToPos = I;
+                        for (int x = 0; x <= secondNibble; x++ ) {
+                            memory.getMemory()[copyToPos++] = V[x];
+                        }
+                        break;
+                    default:
+                }
                 break;
             default:
         }
