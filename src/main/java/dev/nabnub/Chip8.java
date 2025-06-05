@@ -241,6 +241,12 @@ public class Chip8 {
                             memory.getMemory()[copyToPos++] = V[x];
                         }
                         break;
+                    case 0x6:
+                        short readFromPos = I;
+                        for (int x = 0; x <= secondNibble; x++ ) {
+                            V[x] = memory.getMemory()[readFromPos++];
+                        }
+                        break;
                     default:
                 }
                 break;
