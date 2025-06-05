@@ -164,8 +164,8 @@ public class Chip8 {
                         vAddressX = secondNibble;
                         vAddressY = thirdNibble;
                         int sumAddition = (V[vAddressX] & 0xFF) + (V[vAddressY] & 0xFF);
-                        V[0xF] = (byte) (sumAddition > 0xFF ? 1 : 0); //Set carry flag
                         V[vAddressX] = (byte) (sumAddition & 0xFF);
+                        V[0xF] = (byte) (sumAddition > 0xFF ? 1 : 0); //Set carry flag
                         break;
                     case 0x5:
                         //Set Vx = Vx - Vy, set VF = NOT borrow ( 0 borrow, 1 otherwise )
@@ -235,6 +235,24 @@ public class Chip8 {
                 break;
             case 0xF:
                 switch (thirdNibble) {
+                    case 0x1:
+                        switch (fourthNibble) {
+                            case 0xE:
+                                I +=  (byte) (V[secondNibble] & 0xFF);
+                                break;
+                            default:
+                        }
+                        break;
+                    case 0x3:
+                        int vxToDecimal = V[secondNibble] & 0xFF;
+                        int firstDigit = vxToDecimal / 100;
+                        int secondDigit = (vxToDecimal / 10) % 10;
+                        int thirdDigit = vxToDecimal % 10;
+
+                        memory.getMemory()[I] = (byte) firstDigit;
+                        memory.getMemory()[I + 1] = (byte) secondDigit;
+                        memory.getMemory()[I + 2] = (byte) thirdDigit;
+                        break;
                     case 0x5:
                         short copyToPos = I;
                         for (int x = 0; x <= secondNibble; x++ ) {
