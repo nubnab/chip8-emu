@@ -6,17 +6,19 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 public class Chip8 {
-    private final byte[] V = new byte[16];          //V0-VF Registers
-    private short I;                                //Index Register
-    private short PC;                               //Program counter
-    private short[] stack = new short[16];
-    private byte sp;                               //Stack pointer
-    private byte delayTimer;
+
+    private final int[] V = new int[16];          //V0-VF Registers
+    private final int[] stack = new int[16];
+    private int I;                                //Index Register
+    private int PC;                               //Program counter
+    private int sp;                               //Stack pointer
+    private int opcode;                           //Stores current instruction
     private int cpuFreq;
     private long cpuCycleTime;
-    private short currentInstruction;
-    private int vAddressX;
-    private int vAddressY;
+    //private byte delayTimer;
+
+
+
 
     private Memory memory;
     private Display display;
@@ -28,8 +30,8 @@ public class Chip8 {
     private void initialize(int cpuFreq) {
         this.cpuFreq = cpuFreq;
         this.cpuCycleTime = 1_000_000_000 / cpuFreq;
+        this.PC = 0x200;
         memory = new Memory();
-        this.PC = (short) memory.getProgramStart();
         loadGUI(memory);
     }
 
@@ -46,25 +48,26 @@ public class Chip8 {
     public void loadProgram(String programName) throws IOException {
         File file = new File("roms", programName + ".ch8");
         byte[] romBytes = Files.readAllBytes(file.toPath());
-        System.arraycopy(romBytes, 0, memory.getMemory(), memory.getProgramStart(), romBytes.length);
+        //System.arraycopy(romBytes, 0, memory.getMemory(), memory.getProgramStart(), romBytes.length);
     }
 
     public void startEmulation() {
         while (true) {
-            fetch();
-            decodeAndExecute();
+            //fetch();
+            //decodeAndExecute();
         }
     }
 
     private void fetch() {
-        byte mostSignificantByte = memory.getMemory()[this.PC];
-        byte leastSignificantByte = memory.getMemory()[this.PC + 1];
+        //byte mostSignificantByte = memory.getMemory()[this.PC];
+        //byte leastSignificantByte = memory.getMemory()[this.PC + 1];
 
-        this.currentInstruction = (short) ((mostSignificantByte & 0xFF) << 8 | (leastSignificantByte & 0xFF));
+        //this.currentInstruction = (short) ((mostSignificantByte & 0xFF) << 8 | (leastSignificantByte & 0xFF));
 
         incrementPC();
-    }
 
+    }
+/*
     private void decodeAndExecute() {
         //TODO: Refactor
         int firstNibble = (currentInstruction & 0xFFFF) >>> 12;
@@ -82,7 +85,7 @@ public class Chip8 {
                         break;
                     case 0xE:
                         //Return from subroutine
-                        this.PC = pop();
+                        //this.PC = pop();
                         break;
                     default:
                 }
@@ -94,33 +97,33 @@ public class Chip8 {
                 break;
             case 0x2:
                 //Call subroutine at nnn
-                push(this.PC);
-                this.PC = (short) secondThirdAndFourthNibble;
+                //push(this.PC);
+                //this.PC = (short) secondThirdAndFourthNibble;
                 break;
             case 0x3:
                 //Skip next if Vx = nn
                 //TODO: needs testing
-                vAddressX = secondNibble;
-                if(V[vAddressX] == (byte)(thirdAndFourthNibble)) {
-                    incrementPC();
-                }
+                //vAddressX = secondNibble;
+                //if((V[vAddressX] & 0xFF) == (thirdAndFourthNibble & 0xFF)) {
+                //    incrementPC();
+                //}
                 break;
             case 0x4:
                 //Skip next if Vx != nn
                 //TODO: needs testing
-                vAddressX = secondNibble;
-                if(V[vAddressX] != (byte)(thirdAndFourthNibble)) {
-                    incrementPC();
-                }
+                //vAddressX = secondNibble;
+                //if((V[vAddressX] & 0xFF) != (thirdAndFourthNibble & 0xFF)) {
+                //    incrementPC();
+                //}
                 break;
             case 0x5:
                 //Skip next if Vx = Vy
                 //TODO: needs testing
-                vAddressX = secondNibble;
-                vAddressY = thirdNibble;
-                if(V[vAddressX] == V[vAddressY]) {
-                    incrementPC();
-                }
+                //vAddressX = secondNibble;
+                //vAddressY = thirdNibble;
+                //if((V[vAddressX] & 0xFF) == (V[vAddressY] & 0xFF)) {
+                //    incrementPC();
+                //}
                 break;
             case 0x6:
                 //set Vx
@@ -137,79 +140,87 @@ public class Chip8 {
                 switch(fourthNibble) {
                     case 0x0:
                         //Sets Vx = Vy
-                        vAddressX = secondNibble;
-                        vAddressY = thirdNibble;
-                        V[vAddressX] = V[vAddressY];
+                        //vAddressX = secondNibble;
+                        //vAddressY = thirdNibble;
+                        //V[vAddressX] = V[vAddressY];
                         break;
                     case 0x1:
                         //Sets Vx = Vx OR Vy
-                        vAddressX = secondNibble;
-                        vAddressY = thirdNibble;
-                        V[vAddressX] = (byte) (V[vAddressX] | V[vAddressY]);
+                        //vAddressX = secondNibble;
+                        //vAddressY = thirdNibble;
+                        //V[vAddressX] = (byte) (V[vAddressX] | V[vAddressY]);
                         break;
                     case 0x2:
                         //Sets Vx = Vx AND Vy
-                        vAddressX = secondNibble;
-                        vAddressY = thirdNibble;
-                        V[vAddressX] = (byte) (V[vAddressX] & V[vAddressY]);
+                        //vAddressX = secondNibble;
+                        //vAddressY = thirdNibble;
+                        //V[vAddressX] = (byte) (V[vAddressX] & V[vAddressY]);
                         break;
                     case 0x3:
                         //Sets Vx = Vx XOR Vy
-                        vAddressX = secondNibble;
-                        vAddressY = thirdNibble;
-                        V[vAddressX] = (byte) (V[vAddressX] ^ V[vAddressY]);
+                        //vAddressX = secondNibble;
+                        //vAddressY = thirdNibble;
+                        //V[vAddressX] = (byte) (V[vAddressX] ^ V[vAddressY]);
                         break;
                     case 0x4:
                         //Set Vx = Vx + Vy, set VF = carry ( 1 if sum > 255 / 0xFF )
-                        vAddressX = secondNibble;
-                        vAddressY = thirdNibble;
-                        int sumAddition = (V[vAddressX] & 0xFF) + (V[vAddressY] & 0xFF);
-                        V[vAddressX] = (byte) (sumAddition & 0xFF);
-                        V[0xF] = (byte) (sumAddition > 0xFF ? 1 : 0); //Set carry flag
+                        //vAddressX = secondNibble;
+                        //vAddressY = thirdNibble;
+                        //int sumAddition = (V[vAddressX] & 0xFF) + (V[vAddressY] & 0xFF);
+                        //V[vAddressX] = (byte) (sumAddition & 0xFF);
+                        //V[0xF] = (byte) (sumAddition > 0xFF ? 1 : 0); //Set carry flag
                         break;
                     case 0x5:
                         //Set Vx = Vx - Vy, set VF = NOT borrow ( 0 borrow, 1 otherwise )
-                        vAddressX = secondNibble;
-                        vAddressY = thirdNibble;
-                        int sumSubtractionXY = (V[vAddressX] & 0xFF) - (V[vAddressY] & 0xFF);
-                        V[0xF] = (byte) ((V[vAddressX] & 0xFF) > (V[vAddressY] & 0xFF) ? 1 : 0); //Set borrow flag
-                        V[vAddressX] = (byte) (sumSubtractionXY & 0xFF);
+                        //vAddressX = secondNibble;
+                        //vAddressY = thirdNibble;
+
+                        //if(V[vAddressY] > V[vAddressX]) {
+                        //    V[0xF] = 0;
+                        //    V[vAddressX] += (byte) (0x100 - V[vAddressY]);
+                        //}   else {
+                        //    V[0xF] = 1;
+                        //    V[vAddressX] -= V[vAddressY];
+                        //}
+
+                       // V[vAddressX] = (byte) ((V[vAddressX] & 0xFF) - (V[vAddressY]) & 0xFF);
+
                         break;
                     case 0x6:
                         //Set Vx = Vx shift right 1 bit, set VF = 1 if least significant bit = 1
-                        vAddressX = secondNibble;
-                        V[0xF] = (byte) (V[vAddressX] & 1);
-                        V[vAddressX] = (byte) ((V[vAddressX] & 0xFF) >>> 1);
+                        //vAddressX = secondNibble;
+                        //V[0xF] = (byte) (V[vAddressX] & 1);
+                        //V[vAddressX] = (byte) ((V[vAddressX] & 0xFF) >>> 1);
                         break;
                     case 0x7:
                         //Set Vx = Vy - Vx, set VF = NOT borrow ( 1 borrow, 0 otherwise )
-                        vAddressX = secondNibble;
-                        vAddressY = thirdNibble;
-                        int sumSubtractionYX = (V[vAddressY] & 0xFF) - (V[vAddressX] & 0xFF);
-                        V[0xF] = (byte) ((V[vAddressY] & 0xFF) > (V[vAddressX] & 0xFF) ? 1 : 0); //Set borrow flag
-                        V[vAddressX] = (byte) (sumSubtractionYX & 0xFF);
+                        //vAddressX = secondNibble;
+                        //vAddressY = thirdNibble;
+                        //int sumSubtractionYX = (V[vAddressY] & 0xFF) - (V[vAddressX] & 0xFF);
+                        //V[vAddressX] = (byte) (sumSubtractionYX);
+                        //V[0xF] = (byte) ((V[vAddressY] & 0xFF) > (V[vAddressX] & 0xFF) ? 1 : 0); //Set borrow flag
                         break;
                     case 0xE:
                         //Set Vx = Vx shift left 1 bit, set VF = 1 if most significant bit = 1
-                        vAddressX = secondNibble;
-                        V[0xF] = (byte) ((V[vAddressX] >> 7) & 1);
-                        V[vAddressX] = (byte) ((V[vAddressX] & 0xFF) << 1);
+                        //vAddressX = secondNibble;
+                        //V[0xF] = (byte) ((V[vAddressX] >> 7) & 1);
+                        //V[vAddressX] = (byte) ((V[vAddressX] & 0xFF) << 1);
                         break;
                     default:
                 }
                 break;
             case 0x9:
                 //Skip next if Vx != Vy
-                vAddressX = secondNibble;
-                vAddressY = thirdNibble;
-                if(V[vAddressX] != V[vAddressY]) {
-                    incrementPC();
-                }
+                //vAddressX = secondNibble;
+                //vAddressY = thirdNibble;
+                //if(V[vAddressX] != V[vAddressY]) {
+                //    incrementPC();
+                //}
                 break;
             case 0xA:
                 //Set I = nnn
                 //test if lower 12bits are affected by signed/unsigned
-                I = (short) secondThirdAndFourthNibble;
+                I = secondThirdAndFourthNibble;
                 break;
             case 0xD:
                 //Display
@@ -238,32 +249,32 @@ public class Chip8 {
                     case 0x1:
                         switch (fourthNibble) {
                             case 0xE:
-                                I +=  (byte) (V[secondNibble] & 0xFF);
+                                //I +=  (byte) (V[secondNibble] & 0xFF);
                                 break;
                             default:
                         }
                         break;
                     case 0x3:
-                        int vxToDecimal = V[secondNibble] & 0xFF;
-                        int firstDigit = vxToDecimal / 100;
-                        int secondDigit = (vxToDecimal / 10) % 10;
-                        int thirdDigit = vxToDecimal % 10;
+                        //int vxToDecimal = V[secondNibble] & 0xFF;
+                        //int firstDigit = vxToDecimal / 100;
+                        //int secondDigit = (vxToDecimal / 10) % 10;
+                        //int thirdDigit = vxToDecimal % 10;
 
-                        memory.getMemory()[I] = (byte) firstDigit;
-                        memory.getMemory()[I + 1] = (byte) secondDigit;
-                        memory.getMemory()[I + 2] = (byte) thirdDigit;
+                        //memory.getMemory()[I] = (byte) firstDigit;
+                        //memory.getMemory()[I + 1] = (byte) secondDigit;
+                        //memory.getMemory()[I + 2] = (byte) thirdDigit;
                         break;
                     case 0x5:
-                        short copyToPos = I;
-                        for (int x = 0; x <= secondNibble; x++ ) {
-                            memory.getMemory()[copyToPos++] = V[x];
-                        }
+                        //short copyToPos = I;
+                        //for (int x = 0; x <= secondNibble; x++ ) {
+                        //    memory.getMemory()[copyToPos++] = V[x];
+                        //}
                         break;
                     case 0x6:
-                        short readFromPos = I;
-                        for (int x = 0; x <= secondNibble; x++ ) {
-                            V[x] = memory.getMemory()[readFromPos++];
-                        }
+                        //short readFromPos = I;
+                        //for (int x = 0; x <= secondNibble; x++ ) {
+                        //    V[x] = memory.getMemory()[readFromPos++];
+                        //}
                         break;
                     default:
                 }
@@ -271,7 +282,7 @@ public class Chip8 {
             default:
         }
     }
-
+*/
     private void incrementPC() {
         this.PC += 0x2;
     }
@@ -281,6 +292,10 @@ public class Chip8 {
             throw new IllegalArgumentException("Register out of range");
         }
         return V[register];
+    }
+
+    public void fetchOpcode() {
+        //opcode =
     }
 
     private void push(short address) {
