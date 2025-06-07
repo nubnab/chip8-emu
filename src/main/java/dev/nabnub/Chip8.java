@@ -100,7 +100,7 @@ public class Chip8 {
                 break;
             case 0x7000:
                 int result = V[x] + kk;
-                if (result > 256) {
+                if (result >= 256) {
                     V[x] = result - 256;
                 } else {
                     V[x] = result;
@@ -112,16 +112,28 @@ public class Chip8 {
                         V[x] = V[y];
                         break;
                     case 0x8001:
-                        V[x] = V[x] | V[y];
+                        V[x] |= V[y];
                         break;
                     case 0x8002:
-                        V[x] = V[x] & V[y];
+                        V[x] &= V[y];
                         break;
                     case 0x8003:
-                        V[x] = V[x] ^ V[y];
+                        V[x] ^= V[y];
                         break;
                     case 0x8004:
                         addVxVy(x, y);
+                        break;
+                    case 0x8005:
+                        subVxVy(x, y);
+                        break;
+                    case 0x8006:
+                        setVxVySHR(x, y);
+                        break;
+                    case 0x8007:
+                        subVyVx(x, y);
+                        break;
+                    case 0x800E:
+                        setVxVySHL(x, y);
                         break;
                     default:
                 }
@@ -136,173 +148,62 @@ public class Chip8 {
                 //Display
                 draw(x, y, n);
                 break;
-            default:
+            case 0xF000:
+                switch (opcode & 0xF0FF) {
+                    case 0xF01E:
+                        I += V[x];
+                        break;
+                    case 0xF033:
+                        memory.getMemory()[I] = V[x] / 100;
+                        memory.getMemory()[I + 1] = (V[x] % 100) / 10;
+                        memory.getMemory()[I + 2] = (V[x] % 100) % 10;
+                        break;
+                    case 0xF055:
+                        for (int i = 0; i <= x; i++) {
+                            memory.getMemory()[I + i] = (V[i] & 0xFF);
+                        }
+                        break;
+                    case 0xF065:
+                        for(int i = 0; i <= x; i++) {
+                            V[i] = (memory.getMemory()[I + i] & 0xFF);
+                        }
+                        break;
+                    default:
+                }
+                break;
+            default: //TODO add unrecorgnized instruction logging!!
         }
     }
 
     private void addVxVy(int x, int y) {
-        int result = V[x] + V[y];
-
-        if (result > 256) {
-            V[x] = result - 256;
-            V[0xF] = 1;
-        } else {
-            V[x] = result;
-            V[0xF] = 0;
-        }
+        int carry = ((V[x] + V[y]) > 0xFF) ? 1 : 0;
+        V[x] = (V[x] + V[y]) & 0xFF;
+        V[0xF] = carry;
     }
-        //ase 0x2:
-        //   //Call subroutine at nnn
-        //   //push(this.PC);
-        //   //this.PC = (short) secondThirdAndFourthNibble;
-        //   break;
-        //ase 0x6:
-        //   //set Vx
-        //   TODO: investigate
-        //   vAddressX = secondNibble;
-        //   V[vAddressX] = (byte) (currentInstruction & 0xFF);
-        //   break;
-        //ase 0x7:
-        //   //Add to Vx
-        //   TODO: investigate
-        //   vAddressX = secondNibble;
-        //   V[vAddressX] = (byte) (V[vAddressX] + (currentInstruction & 0xFF));
-        //   break;
 
-        //ase 0x8:
-        //   switch(fourthNibble) {
-        //       case 0x0:
-        //           //Sets Vx = Vy
-        //           //vAddressX = secondNibble;
-        //           //vAddressY = thirdNibble;
-        //           //V[vAddressX] = V[vAddressY];
-        //           break;
-        //       case 0x1:
-        //           //Sets Vx = Vx OR Vy
-        //           //vAddressX = secondNibble;
-        //           //vAddressY = thirdNibble;
-        //           //V[vAddressX] = (byte) (V[vAddressX] | V[vAddressY]);
-        //           break;
-        //       case 0x2:
-        //           //Sets Vx = Vx AND Vy
-        //           //vAddressX = secondNibble;
-        //           //vAddressY = thirdNibble;
-        //           //V[vAddressX] = (byte) (V[vAddressX] & V[vAddressY]);
-        //           break;
-        //       case 0x3:
-        //           //Sets Vx = Vx XOR Vy
-        //           //vAddressX = secondNibble;
-        //           //vAddressY = thirdNibble;
-        //           //V[vAddressX] = (byte) (V[vAddressX] ^ V[vAddressY]);
-        //           break;
-        //       case 0x4:
-        //           //Set Vx = Vx + Vy, set VF = carry ( 1 if sum > 255 / 0xFF )
-        //           //vAddressX = secondNibble;
-        //           //vAddressY = thirdNibble;
-        //           //int sumAddition = (V[vAddressX] & 0xFF) + (V[vAddressY] & 0xFF);
-        //           //V[vAddressX] = (byte) (sumAddition & 0xFF);
-        //           //V[0xF] = (byte) (sumAddition > 0xFF ? 1 : 0); //Set carry flag
-        //           break;
-        //       case 0x5:
-        //           //Set Vx = Vx - Vy, set VF = NOT borrow ( 0 borrow, 1 otherwise )
-        //           //vAddressX = secondNibble;
-        //           //vAddressY = thirdNibble;
+    private void subVxVy(int x, int y) {
+        int carry = (V[y] > V[x]) ? 0 : 1;
+        V[x] = (V[x] - V[y]) & 0xFF;
+        V[0xF] = carry;
+    }
 
-        //           //if(V[vAddressY] > V[vAddressX]) {
-        //           //    V[0xF] = 0;
-        //           //    V[vAddressX] += (byte) (0x100 - V[vAddressY]);
-        //           //}   else {
-        //           //    V[0xF] = 1;
-        //           //    V[vAddressX] -= V[vAddressY];
-        //           //}
+    private void setVxVySHR(int x, int y) {
+        int carry = (V[y] & 0x1) == 1 ? 1 : 0;
+        V[x] = V[y] >>> 1;
+        V[0xF] = carry;
+    }
 
-        //          // V[vAddressX] = (byte) ((V[vAddressX] & 0xFF) - (V[vAddressY]) & 0xFF);
+    private void setVxVySHL(int x, int y) {
+        int carry = ((V[y] >>> 7) & 0x1) == 1 ? 1 : 0;
+        V[x] = (V[y] << 1) & 0xFF;
+        V[0xF] = carry;
+    }
 
-        //           break;
-        //       case 0x6:
-        //           //Set Vx = Vx shift right 1 bit, set VF = 1 if least significant bit = 1
-        //           //vAddressX = secondNibble;
-        //           //V[0xF] = (byte) (V[vAddressX] & 1);
-        //           //V[vAddressX] = (byte) ((V[vAddressX] & 0xFF) >>> 1);
-        //           break;
-        //       case 0x7:
-        //           //Set Vx = Vy - Vx, set VF = NOT borrow ( 1 borrow, 0 otherwise )
-        //           //vAddressX = secondNibble;
-        //           //vAddressY = thirdNibble;
-        //           //int sumSubtractionYX = (V[vAddressY] & 0xFF) - (V[vAddressX] & 0xFF);
-        //           //V[vAddressX] = (byte) (sumSubtractionYX);
-        //           //V[0xF] = (byte) ((V[vAddressY] & 0xFF) > (V[vAddressX] & 0xFF) ? 1 : 0); //Set borrow flag
-        //           break;
-        //       case 0xE:
-        //           //Set Vx = Vx shift left 1 bit, set VF = 1 if most significant bit = 1
-        //           //vAddressX = secondNibble;
-        //           //V[0xF] = (byte) ((V[vAddressX] >> 7) & 1);
-        //           //V[vAddressX] = (byte) ((V[vAddressX] & 0xFF) << 1);
-        //           break;
-        //       default:
-        //   }
-        //   break;
-        //ase 0xA:
-        //   //Set I = nnn
-        //   //test if lower 12bits are affected by signed/unsigned
-        //   I = secondThirdAndFourthNibble;
-        //   break;
-        //ase 0xD:
-        //   //Display
-        //   int baseX = V[secondNibble] % 64;
-        //   int baseY = V[thirdNibble] % 32;
-        //   V[0xF] = 0;
-
-        //   for(int row = 0; row < fourthNibble && (baseY + row) < 32; row++) {
-        //       int spriteByte = memory.getMemory()[I + row] & 0xFF;
-
-        //       for(int col = 0; col < 8 && (baseX + col) < 64; col++) {
-        //           if((spriteByte & (0x80 >> col)) != 0) {
-        //               int pixelX = (baseX + col);
-        //               int pixelY = (baseY + row);
-        //               boolean wasPixelOn = display.togglePixel(pixelX, pixelY);
-        //               if(wasPixelOn) {
-        //                   V[0xF] = 1;
-        //               }
-        //           }
-        //       }
-        //   }
-        //   display.repaint();
-        //   break;
-        //ase 0xF:
-        //   switch (thirdNibble) {
-        //       case 0x1:
-        //           switch (fourthNibble) {
-        //               case 0xE:
-        //                   //I +=  (byte) (V[secondNibble] & 0xFF);
-        //                   break;
-        //               default:
-        //           }
-        //           break;
-        //       case 0x3:
-        //           //int vxToDecimal = V[secondNibble] & 0xFF;
-        //           //int firstDigit = vxToDecimal / 100;
-        //           //int secondDigit = (vxToDecimal / 10) % 10;
-        //           //int thirdDigit = vxToDecimal % 10;
-
-        //           //memory.getMemory()[I] = (byte) firstDigit;
-        //           //memory.getMemory()[I + 1] = (byte) secondDigit;
-        //           //memory.getMemory()[I + 2] = (byte) thirdDigit;
-        //           break;
-        //       case 0x5:
-        //           //short copyToPos = I;
-        //           //for (int x = 0; x <= secondNibble; x++ ) {
-        //           //    memory.getMemory()[copyToPos++] = V[x];
-        //           //}
-        //           break;
-        //       case 0x6:
-        //           //short readFromPos = I;
-        //           //for (int x = 0; x <= secondNibble; x++ ) {
-        //           //    V[x] = memory.getMemory()[readFromPos++];
-        //           //}
-        //           break;
-        //       default:
-        //   }
+    private void subVyVx(int x, int y) {
+        int carry = (V[x] > V[y]) ? 0 : 1;
+        V[x] = (V[y] - V[x]) & 0xFF;
+        V[0xF] = carry;
+    }
 
     public void fetchOpcode() {
         opcode = memory.getMemory()[pc] << 8 | memory.getMemory()[pc + 1];
@@ -329,28 +230,5 @@ public class Chip8 {
         }
         display.repaint();
     }
-
-    //public byte getRegister(int register) {
-    //    if(register < 0 || register > 0xF) {
-    //        throw new IllegalArgumentException("Register out of range");
-    //    }
-    //    return V[register];
-    //}
-
-
-
-    private void push(short address) {
-        if (sp > 15) {
-            throw new RuntimeException("Stack overflow");
-        }
-        stack[++sp] = address;
-    }
-
-    //private short pop() {
-    //    if (sp < 0) {
-    //        throw new RuntimeException("Stack underflow");
-    //    }
-    //    return stack[sp--];
-    //}
 
 }
