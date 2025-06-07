@@ -73,18 +73,61 @@ public class Chip8 {
                     case 0x00E0:
                         display.clear();
                         break;
-                    case 0x00EE: //Return from subroutine this.PC = pop(); break;
+                    case 0x00EE:
+                        this.pc = stack[sp--];
+                        break;
                     default:
                 }
                 break;
             case 0x1000:
                 this.pc = nnn;
                 break;
+            case 0x2000:
+                stack[++sp] = this.pc;
+                this.pc = nnn;
+                break;
+            case 0x3000:
+                if (V[x] == kk) incrementPC();
+                break;
+            case 0x4000:
+                if (V[x] != kk) incrementPC();
+                break;
+            case 0x5000:
+                if (V[x] == V[y]) incrementPC();
+                break;
             case 0x6000:
                 V[x] = kk;
                 break;
             case 0x7000:
-                V[x] += kk;
+                int result = V[x] + kk;
+                if (result > 256) {
+                    V[x] = result - 256;
+                } else {
+                    V[x] = result;
+                }
+                break;
+            case 0x8000:
+                switch (opcode & 0xF00F) {
+                    case 0x8000:
+                        V[x] = V[y];
+                        break;
+                    case 0x8001:
+                        V[x] = V[x] | V[y];
+                        break;
+                    case 0x8002:
+                        V[x] = V[x] & V[y];
+                        break;
+                    case 0x8003:
+                        V[x] = V[x] ^ V[y];
+                        break;
+                    case 0x8004:
+                        addVxVy(x, y);
+                        break;
+                    default:
+                }
+                break;
+            case 0x9000:
+                if (V[x] != V[y]) incrementPC();
                 break;
             case 0xA000:
                 I = nnn;
@@ -95,54 +138,37 @@ public class Chip8 {
                 break;
             default:
         }
+    }
 
+    private void addVxVy(int x, int y) {
+        int result = V[x] + V[y];
 
-        //ase 0x1:
-        //   //Jump, ensure PC does not go up
-        //   //TODO: needs testing
-        //   this.PC = (short) secondThirdAndFourthNibble;
-        //   break;
+        if (result > 256) {
+            V[x] = result - 256;
+            V[0xF] = 1;
+        } else {
+            V[x] = result;
+            V[0xF] = 0;
+        }
+    }
         //ase 0x2:
         //   //Call subroutine at nnn
         //   //push(this.PC);
         //   //this.PC = (short) secondThirdAndFourthNibble;
         //   break;
-        //ase 0x3:
-        //   //Skip next if Vx = nn
-        //   //TODO: needs testing
-        //   //vAddressX = secondNibble;
-        //   //if((V[vAddressX] & 0xFF) == (thirdAndFourthNibble & 0xFF)) {
-        //   //    incrementPC();
-        //   //}
-        //   break;
-        //ase 0x4:
-        //   //Skip next if Vx != nn
-        //   //TODO: needs testing
-        //   //vAddressX = secondNibble;
-        //   //if((V[vAddressX] & 0xFF) != (thirdAndFourthNibble & 0xFF)) {
-        //   //    incrementPC();
-        //   //}
-        //   break;
-        //ase 0x5:
-        //   //Skip next if Vx = Vy
-        //   //TODO: needs testing
-        //   //vAddressX = secondNibble;
-        //   //vAddressY = thirdNibble;
-        //   //if((V[vAddressX] & 0xFF) == (V[vAddressY] & 0xFF)) {
-        //   //    incrementPC();
-        //   //}
-        //   break;
         //ase 0x6:
         //   //set Vx
+        //   TODO: investigate
         //   vAddressX = secondNibble;
         //   V[vAddressX] = (byte) (currentInstruction & 0xFF);
         //   break;
         //ase 0x7:
         //   //Add to Vx
-        //   //TODO: needs testing
+        //   TODO: investigate
         //   vAddressX = secondNibble;
         //   V[vAddressX] = (byte) (V[vAddressX] + (currentInstruction & 0xFF));
         //   break;
+
         //ase 0x8:
         //   switch(fourthNibble) {
         //       case 0x0:
@@ -216,14 +242,6 @@ public class Chip8 {
         //       default:
         //   }
         //   break;
-        //ase 0x9:
-        //   //Skip next if Vx != Vy
-        //   //vAddressX = secondNibble;
-        //   //vAddressY = thirdNibble;
-        //   //if(V[vAddressX] != V[vAddressY]) {
-        //   //    incrementPC();
-        //   //}
-        //   break;
         //ase 0xA:
         //   //Set I = nnn
         //   //test if lower 12bits are affected by signed/unsigned
@@ -285,8 +303,6 @@ public class Chip8 {
         //           break;
         //       default:
         //   }
-
-    }
 
     public void fetchOpcode() {
         opcode = memory.getMemory()[pc] << 8 | memory.getMemory()[pc + 1];
