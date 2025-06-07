@@ -10,15 +10,12 @@ public class Chip8 {
     private final int[] V = new int[16];          //V0-VF Registers
     private final int[] stack = new int[16];
     private int I;                                //Index Register
-    private int PC;                               //Program counter
+    private int pc;                               //Program counter
     private int sp;                               //Stack pointer
     private int opcode;                           //Stores current instruction
     private int cpuFreq;
     private long cpuCycleTime;
     //private byte delayTimer;
-
-
-
 
     private Memory memory;
     private Display display;
@@ -30,12 +27,12 @@ public class Chip8 {
     private void initialize(int cpuFreq) {
         this.cpuFreq = cpuFreq;
         this.cpuCycleTime = 1_000_000_000 / cpuFreq;
-        this.PC = 0x200;
+        this.pc = 0x200;
         memory = new Memory();
-        loadGUI(memory);
+        loadGUI();
     }
 
-    private void loadGUI(Memory memory) {
+    private void loadGUI() {
         JFrame frame = new JFrame("Chip8 Emulator");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         display = new Display();
@@ -48,7 +45,7 @@ public class Chip8 {
     public void loadProgram(String programName) throws IOException {
         File file = new File("roms", programName + ".ch8");
         byte[] romBytes = Files.readAllBytes(file.toPath());
-        //System.arraycopy(romBytes, 0, memory.getMemory(), memory.getProgramStart(), romBytes.length);
+        memory.loadProgram(romBytes);
     }
 
     public void startEmulation() {
@@ -64,7 +61,7 @@ public class Chip8 {
 
         //this.currentInstruction = (short) ((mostSignificantByte & 0xFF) << 8 | (leastSignificantByte & 0xFF));
 
-        incrementPC();
+        //incrementPC();
 
     }
 /*
@@ -283,16 +280,16 @@ public class Chip8 {
         }
     }
 */
-    private void incrementPC() {
-        this.PC += 0x2;
-    }
+    //private void incrementPC() {
+    //    this.pc += 0x2;
+    //}
 
-    public byte getRegister(int register) {
-        if(register < 0 || register > 0xF) {
-            throw new IllegalArgumentException("Register out of range");
-        }
-        return V[register];
-    }
+    //public byte getRegister(int register) {
+    //    if(register < 0 || register > 0xF) {
+    //        throw new IllegalArgumentException("Register out of range");
+    //    }
+    //    return V[register];
+    //}
 
     public void fetchOpcode() {
         //opcode =
@@ -305,11 +302,11 @@ public class Chip8 {
         stack[++sp] = address;
     }
 
-    private short pop() {
-        if (sp < 0) {
-            throw new RuntimeException("Stack underflow");
-        }
-        return stack[sp--];
-    }
+    //private short pop() {
+    //    if (sp < 0) {
+    //        throw new RuntimeException("Stack underflow");
+    //    }
+    //    return stack[sp--];
+    //}
 
 }

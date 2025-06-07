@@ -32,6 +32,12 @@ public class Memory {
         return memory;
     }
 
+    public void loadProgram(byte[] b) {
+        for(int i = 0; i < b.length; i++) {
+            memory[i + 512] = (b[i] & 0xFF);
+        }
+    }
+
     private void loadFonts() {
         System.arraycopy(FONT, 0, memory, FONT_START, FONT.length);
     }
