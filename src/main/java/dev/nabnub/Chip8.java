@@ -148,6 +148,9 @@ public class Chip8 {
             case 0xA000:
                 I = nnn;
                 break;
+            case 0xB000:
+                this.pc = (nnn + V[0]) & 0xFF;
+                break;
             case 0xD000:
                 //Display
                 draw(x, y, n);
