@@ -9,8 +9,8 @@ public class Main {
         //chip8.loadProgram("1-chip8-logo");
         //chip8.loadProgram("2-ibm-logo");
         //chip8.loadProgram("3-corax+");
-        chip8.loadProgram("4-flags");
-        //chip8.loadProgram("5-quirks");
+        //chip8.loadProgram("4-flags");
+        chip8.loadProgram("5-quirks");
         //chip8.loadProgram("6-keypad");
         //chip8.loadProgram("7-beep");
 

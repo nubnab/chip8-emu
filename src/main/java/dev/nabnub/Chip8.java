@@ -171,7 +171,8 @@ public class Chip8 {
                     default:
                 }
                 break;
-            default: //TODO add unrecorgnized instruction logging!!
+            default:
+                System.out.println("Unknown opcode: " + opcode);
         }
     }
 
