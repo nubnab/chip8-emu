@@ -18,6 +18,7 @@ public class Chip8 {
     //private byte delayTimer;
 
     private Memory memory;
+    private Keyboard keyboard;
     private Display display;
 
     public Chip8(int cpuFreq) {
@@ -35,7 +36,9 @@ public class Chip8 {
     private void loadGUI() {
         JFrame frame = new JFrame("Chip8 Emulator");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        keyboard = new Keyboard();
         display = new Display();
+        frame.addKeyListener(keyboard);
         frame.add(display);
         frame.pack();
         frame.setLocationRelativeTo(null);
@@ -46,6 +49,7 @@ public class Chip8 {
         File file = new File("roms", programName + ".ch8");
         byte[] romBytes = Files.readAllBytes(file.toPath());
         memory.loadProgram(romBytes);
+        memory.getMemory()[0x1FF] = 0x1;
     }
 
     public void startEmulation() {
@@ -147,6 +151,14 @@ public class Chip8 {
             case 0xD000:
                 //Display
                 draw(x, y, n);
+                break;
+            case 0xE000:
+                switch (opcode & 0xF0FF) {
+                    case 0xE0A1:
+                        if (!keyboard.isKeyPressed(V[x])) incrementPC();
+                        break;
+                    default:
+                }
                 break;
             case 0xF000:
                 switch (opcode & 0xF0FF) {

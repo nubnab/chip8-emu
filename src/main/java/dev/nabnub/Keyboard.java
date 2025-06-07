@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Keyboard implements KeyListener {
-    private final boolean[] keys = new boolean[16];
+    private boolean[] keys;
     private final Map<Integer, Integer> keyMap = new HashMap<>();
 
     public Keyboard() {
@@ -14,6 +14,7 @@ public class Keyboard implements KeyListener {
     }
 
     private void initialize() {
+        keys = new boolean[16];
         keyMap.clear();
 
         keyMap.put(KeyEvent.VK_1, 0x1);
@@ -38,6 +39,15 @@ public class Keyboard implements KeyListener {
         keyMap.put(KeyEvent.VK_V, 0xF);
     }
 
+    public boolean[] getKeys() {
+        return keys;
+    }
+
+    public boolean isKeyPressed(int keyCode) {
+        if (keyCode < 0 || keyCode > 16) return false;
+        return keys[keyCode];
+    }
+
     @Override
     public void keyPressed(KeyEvent e) {
         if (keyMap.containsKey(e.getKeyCode())) {
@@ -54,4 +64,7 @@ public class Keyboard implements KeyListener {
 
     @Override
     public void keyTyped(KeyEvent e) {}
+
+
+
 }
