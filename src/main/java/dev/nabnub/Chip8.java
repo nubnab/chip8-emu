@@ -49,7 +49,7 @@ public class Chip8 {
         File file = new File("roms", programName + ".ch8");
         byte[] romBytes = Files.readAllBytes(file.toPath());
         memory.loadProgram(romBytes);
-        memory.getMemory()[0x1FF] = 0x1;
+        //memory.getMemory()[0x1FF] = 0x1; //testing only
     }
 
     public void startEmulation() {
@@ -159,6 +159,9 @@ public class Chip8 {
                 switch (opcode & 0xF0FF) {
                     case 0xE0A1:
                         if (!keyboard.isKeyPressed(V[x])) incrementPC();
+                        break;
+                    case 0xE09E:
+                        if (keyboard.isKeyPressed(V[x])) incrementPC();
                         break;
                     default:
                 }
