@@ -15,7 +15,6 @@ public class Chip8 {
     private int pc;                               //Program counter
     private int sp;                               //Stack pointer
     private int opcode;                           //Stores current instruction
-    private int cpuFreq;
     private long cpuCycleTime;
     private int delayTimer;
 
@@ -29,7 +28,6 @@ public class Chip8 {
     }
 
     private void initialize(int cpuFreq) {
-        this.cpuFreq = cpuFreq;
         this.cpuCycleTime = 1_000_000_000 / cpuFreq;
         this.pc = 0x200;
         memory = new Memory();
@@ -173,14 +171,12 @@ public class Chip8 {
                 I = nnn;
                 break;
             case 0xB000:
-                //this.pc = (nnn + V[0]) & 0xFF;
                 this.pc = nnn + V[0];
                 break;
             case 0xC000:
                 V[x] = (randomNum.nextInt(256) & kk);
                 break;
             case 0xD000:
-                //Display
                 draw(x, y, n);
                 break;
             case 0xE000:

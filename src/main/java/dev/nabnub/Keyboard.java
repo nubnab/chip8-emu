@@ -39,10 +39,6 @@ public class Keyboard implements KeyListener {
         keyMap.put(KeyEvent.VK_V, 0xF);
     }
 
-    public boolean[] getKeys() {
-        return keys;
-    }
-
     public boolean isKeyPressed(int keyCode) {
         if (keyCode < 0 || keyCode > 16) return false;
         return keys[keyCode];
