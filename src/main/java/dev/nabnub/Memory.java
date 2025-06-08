@@ -32,6 +32,10 @@ public class Memory {
         return memory;
     }
 
+    public int getFONT_START() {
+        return FONT_START;
+    }
+
     public void loadProgram(byte[] b) {
         for(int i = 0; i < b.length; i++) {
             memory[i + 512] = (b[i] & 0xFF);

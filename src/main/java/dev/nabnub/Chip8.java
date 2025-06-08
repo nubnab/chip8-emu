@@ -4,18 +4,21 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Random;
 
 public class Chip8 {
 
     private final int[] V = new int[16];          //V0-VF Registers
     private final int[] stack = new int[16];
+    private final Random randomNum = new Random();
     private int I;                                //Index Register
     private int pc;                               //Program counter
     private int sp;                               //Stack pointer
     private int opcode;                           //Stores current instruction
     private int cpuFreq;
     private long cpuCycleTime;
-    //private byte delayTimer;
+    private int delayTimer;
+
 
     private Memory memory;
     private Keyboard keyboard;
@@ -49,14 +52,32 @@ public class Chip8 {
         File file = new File("roms", programName + ".ch8");
         byte[] romBytes = Files.readAllBytes(file.toPath());
         memory.loadProgram(romBytes);
-        //memory.getMemory()[0x1FF] = 0x1; //testing only
     }
 
     public void startEmulation() {
+        long lastCycleTime = System.nanoTime();
+        long lastTimerTime = lastCycleTime;
+
         while (true) {
-            fetch();
-            decodeAndExecute();
+            long currentTime = System.nanoTime();
+
+            if(currentTime - lastCycleTime >= cpuCycleTime) {
+                fetch();
+                decodeAndExecute();
+                lastCycleTime = currentTime;
+            }
+
+            if(currentTime - lastTimerTime >= 16_666_667) {
+                updateTimers();
+                lastTimerTime = currentTime;
+            }
+
+
         }
+    }
+
+    private void updateTimers() {
+        if (delayTimer > 0) delayTimer--;
     }
 
     private void fetch() {
@@ -117,12 +138,15 @@ public class Chip8 {
                         break;
                     case 0x8001:
                         V[x] |= V[y];
+                        V[0xF] = 0x0;
                         break;
                     case 0x8002:
                         V[x] &= V[y];
+                        V[0xF] = 0x0;
                         break;
                     case 0x8003:
                         V[x] ^= V[y];
+                        V[0xF] = 0x0;
                         break;
                     case 0x8004:
                         addVxVy(x, y);
@@ -149,7 +173,11 @@ public class Chip8 {
                 I = nnn;
                 break;
             case 0xB000:
-                this.pc = (nnn + V[0]) & 0xFF;
+                //this.pc = (nnn + V[0]) & 0xFF;
+                this.pc = nnn + V[0];
+                break;
+            case 0xC000:
+                V[x] = (randomNum.nextInt(256) & kk);
                 break;
             case 0xD000:
                 //Display
@@ -168,8 +196,22 @@ public class Chip8 {
                 break;
             case 0xF000:
                 switch (opcode & 0xF0FF) {
+                    case 0xF007:
+                        //Investigate
+                        V[x] = delayTimer & 0xFF;
+                        break;
+                    case 0xF015:
+                        delayTimer = V[x] & 0xFF;
+                        break;
+                    case 0xF00A:
+                        //unused currently
+                        break;
                     case 0xF01E:
                         I += V[x];
+                        break;
+                    case 0xF029:
+                        //Investigate
+                        I = memory.getFONT_START() + ((V[x] & 0xF) * 5);
                         break;
                     case 0xF033:
                         memory.getMemory()[I] = V[x] / 100;
@@ -180,11 +222,13 @@ public class Chip8 {
                         for (int i = 0; i <= x; i++) {
                             memory.getMemory()[I + i] = (V[i] & 0xFF);
                         }
+                        I += x + 1;
                         break;
                     case 0xF065:
                         for(int i = 0; i <= x; i++) {
                             V[i] = (memory.getMemory()[I + i] & 0xFF);
                         }
+                        I += x + 1;
                         break;
                     default:
                 }
@@ -249,5 +293,4 @@ public class Chip8 {
         }
         display.repaint();
     }
-
 }
