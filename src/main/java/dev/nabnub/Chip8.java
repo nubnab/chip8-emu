@@ -204,7 +204,12 @@ public class Chip8 {
                         delayTimer = V[x] & 0xFF;
                         break;
                     case 0xF00A:
-                        //unused currently
+                        int pressedKey = keyboard.getAnyPressedKey();
+                        if (pressedKey != -1) {
+                            V[x] = pressedKey;
+                        } else {
+                            this.pc -= 2;
+                        }
                         break;
                     case 0xF01E:
                         I += V[x];

@@ -48,6 +48,15 @@ public class Keyboard implements KeyListener {
         return keys[keyCode];
     }
 
+    public int getAnyPressedKey() {
+        for (int i = 0; i < keys.length; i++) {
+            if (keys[i]) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     @Override
     public void keyPressed(KeyEvent e) {
         if (keyMap.containsKey(e.getKeyCode())) {
