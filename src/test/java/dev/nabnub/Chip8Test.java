@@ -18,7 +18,7 @@ class Chip8Test {
 
     @BeforeEach
     public void setUp() {
-        chip8 = new Chip8();
+        chip8 = new Chip8(11);
     }
 
     @AfterEach

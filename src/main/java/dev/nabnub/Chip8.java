@@ -15,28 +15,21 @@ public class Chip8 {
     private int pc;                               //Program counter
     private int sp;                               //Stack pointer
     private int opcode;                           //Stores current instruction
+    private int instructionsPerFrame;
     private int delayTimer;
-    private int instructionsPerFrame = 11;
-    long lastFrameTime;
-    long currentTime;
-    long elapsedTime;
-    long remainingTime;
-    long frameDuration = 16_666_667;              //60Hz refresh rate
-    private boolean running = true;
 
-    public void setInstructionsPerFrame(int ipf) {
-        this.instructionsPerFrame = ipf;
-    }
+    private boolean running = true;
 
     private Memory memory;
     private Keyboard keyboard;
     private Display display;
 
-    public Chip8() {
-        initialize();
+    public Chip8(int ipf) {
+        initialize(ipf);
     }
 
-    private void initialize() {
+    private void initialize(int ipf) {
+        this.instructionsPerFrame = ipf;
         this.pc = 0x200;
         memory = new Memory();
         loadGUI();
@@ -61,12 +54,15 @@ public class Chip8 {
     }
 
     public void startEmulation() {
-        lastFrameTime = System.nanoTime();
+        long lastFrameTime = System.nanoTime();
 
         while (running) {
-            currentTime = System.nanoTime();
-            elapsedTime = currentTime - lastFrameTime;
+            long currentTime = System.nanoTime();
+            long elapsedTime = currentTime - lastFrameTime;
 
+
+            //60Hz refresh rate
+            long frameDuration = 16_666_667;
             if(elapsedTime >= frameDuration) {
                 updateTimers();
 
@@ -77,7 +73,7 @@ public class Chip8 {
 
                 display.repaint();
 
-                remainingTime = frameDuration - (System.nanoTime() - currentTime);
+                long remainingTime = frameDuration - (System.nanoTime() - currentTime);
 
                 if(remainingTime > 0){
                     try {
@@ -296,7 +292,9 @@ public class Chip8 {
     }
 
     private void draw(int x, int y, int n) {
-        V[0xF] = 0;
+        int storeVF = (x == 0xF || y == 0xF) ? V[0xF] : 0;
+        int collisionFlag = 0;
+
         for(int row = 0; row < n && ((V[y] % 32) + row) < 32; row++) {
             int spriteByte = memory.getMemory()[I + row];
             for(int col = 0; col < 8 && ((V[x] % 64) + col) < 64; col++) {
@@ -305,11 +303,15 @@ public class Chip8 {
                     int pixelY = ((V[y] % 32) + row);
                     boolean wasPixelOn = display.togglePixel(pixelX, pixelY);
                     if(wasPixelOn) {
-                        V[0xF] = 1;
+                        collisionFlag = 1;
                     }
                 }
             }
         }
-        //display.repaint();
+        if( x != 0xF && y != 0xF) {
+            V[0xF] = collisionFlag;
+        } else {
+            V[0xF] = storeVF;
+        }
     }
 }
