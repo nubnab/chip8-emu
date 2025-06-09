@@ -15,20 +15,28 @@ public class Chip8 {
     private int pc;                               //Program counter
     private int sp;                               //Stack pointer
     private int opcode;                           //Stores current instruction
-    private long cpuCycleTime;
     private int delayTimer;
+    private int instructionsPerFrame = 11;
+    long lastFrameTime;
+    long currentTime;
+    long elapsedTime;
+    long remainingTime;
+    long frameDuration = 16_666_667;              //60Hz refresh rate
+    private boolean running = true;
 
+    public void setInstructionsPerFrame(int ipf) {
+        this.instructionsPerFrame = ipf;
+    }
 
     private Memory memory;
     private Keyboard keyboard;
     private Display display;
 
-    public Chip8(int cpuFreq) {
-        initialize(cpuFreq);
+    public Chip8() {
+        initialize();
     }
 
-    private void initialize(int cpuFreq) {
-        this.cpuCycleTime = 1_000_000_000 / cpuFreq;
+    private void initialize() {
         this.pc = 0x200;
         memory = new Memory();
         loadGUI();
@@ -53,24 +61,34 @@ public class Chip8 {
     }
 
     public void startEmulation() {
-        long lastCycleTime = System.nanoTime();
-        long lastTimerTime = lastCycleTime;
+        lastFrameTime = System.nanoTime();
 
-        while (true) {
-            long currentTime = System.nanoTime();
+        while (running) {
+            currentTime = System.nanoTime();
+            elapsedTime = currentTime - lastFrameTime;
 
-            if(currentTime - lastCycleTime >= cpuCycleTime) {
-                fetch();
-                decodeAndExecute();
-                lastCycleTime = currentTime;
-            }
-
-            if(currentTime - lastTimerTime >= 16_666_667) {
+            if(elapsedTime >= frameDuration) {
                 updateTimers();
-                lastTimerTime = currentTime;
+
+                for (int i = 0; i < instructionsPerFrame; i++) {
+                    fetch();
+                    decodeAndExecute();
+                }
+
+                display.repaint();
+
+                remainingTime = frameDuration - (System.nanoTime() - currentTime);
+
+                if(remainingTime > 0){
+                    try {
+                        Thread.sleep(remainingTime / 1_000_000, (int) (remainingTime % 1_000_000));
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        running = false;
+                    }
+                }
+                lastFrameTime = currentTime;
             }
-
-
         }
     }
 
@@ -292,6 +310,6 @@ public class Chip8 {
                 }
             }
         }
-        display.repaint();
+        //display.repaint();
     }
 }
