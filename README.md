@@ -23,3 +23,7 @@ WIP Chip-8 emulator, aimed at interpreting the original instruction set (not SUP
 ---
 
 ## Building
+
+```
+mvn clean install
+```
