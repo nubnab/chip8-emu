@@ -16,9 +16,6 @@ public class Display extends JPanel {
     }
 
     public boolean togglePixel(int x, int y) {
-        x = x % width;
-        y = y % height;
-
         pixels[x][y] ^= true;
         return pixels[x][y];
     }

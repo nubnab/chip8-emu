@@ -67,7 +67,17 @@ public class Chip8 {
 
                 for (int i = 0; i < instructionsPerFrame; i++) {
                     fetch();
+                    for(int j = 0; j < V.length; j++){
+                        if(V[j] < 0){
+                            System.out.println("V[" + i + "] = " + V[j]);
+                        }
+                    }
                     decodeAndExecute();
+                    for(int j = 0; j < V.length; j++){
+                        if(V[j] < 0){
+                            System.out.println("V[" + i + "] = " + V[j]);
+                        }
+                    }
                 }
 
                 display.repaint();
@@ -137,7 +147,6 @@ public class Chip8 {
                 V[x] = kk;
                 break;
             case 0x7000:
-                //Test
                 int result = V[x] + kk;
                 if (result >= 256) {
                     V[x] = result - 256;
@@ -152,15 +161,15 @@ public class Chip8 {
                         break;
                     case 0x8001:
                         V[x] |= V[y];
-                        //V[0xF] = 0x0; quirks
+                        V[0xF] = 0x0;
                         break;
                     case 0x8002:
                         V[x] &= V[y];
-                        //V[0xF] = 0x0; quirks
+                        V[0xF] = 0x0;
                         break;
                     case 0x8003:
                         V[x] ^= V[y];
-                        //V[0xF] = 0x0; quirks
+                        V[0xF] = 0x0;
                         break;
                     case 0x8004:
                         addVxVy(x, y);
@@ -209,11 +218,10 @@ public class Chip8 {
             case 0xF000:
                 switch (opcode & 0xF0FF) {
                     case 0xF007:
-                        //Investigate
-                        V[x] = delayTimer; //& 0xFF;
+                        V[x] = delayTimer;
                         break;
                     case 0xF015:
-                        delayTimer = V[x]; //& 0xFF;
+                        delayTimer = V[x];
                         break;
                     case 0xF00A:
                         int pressedKey = keyboard.getAnyPressedKey();
@@ -224,11 +232,9 @@ public class Chip8 {
                         }
                         break;
                     case 0xF01E:
-                        //Investigate wrapping
                         I += V[x];
                         break;
                     case 0xF029:
-                        //Investigate
                         I = memory.getFONT_START() + (V[x] * 5);
                         break;
                     case 0xF033:
@@ -295,26 +301,21 @@ public class Chip8 {
     }
 
     private void draw(int x, int y, int n) {
-        int storeVF = (x == 0xF || y == 0xF) ? V[0xF] : 0;
-        int collisionFlag = 0;
+        V[0xF] = 0;
 
-        for(int row = 0; row < n && ((V[y] % 32) + row) < 32; row++) {
-            int spriteByte = memory.getMemory()[I + row];
-            for(int col = 0; col < 8 && ((V[x] % 64) + col) < 64; col++) {
-                if((spriteByte & (0x80 >> col)) != 0) {
-                    int pixelX = ((V[x] % 64) + col);
-                    int pixelY = ((V[y] % 32) + row);
+        for(int yline = 0; yline < n; yline++) {
+            int spriteByte = memory.getMemory()[I + yline];
+            for(int xline = 0; xline < 8; xline++) {
+                if((spriteByte & (0x80 >> xline)) != 0) {
+                    int pixelX = ((V[x] + xline) % 64);
+                    int pixelY = ((V[y] + yline) % 32);
                     boolean wasPixelOn = display.togglePixel(pixelX, pixelY);
-                    if(wasPixelOn) {
-                        collisionFlag = 1;
+                    if(!wasPixelOn) {
+                        V[0xF] = 1;
                     }
                 }
             }
         }
-        if( x != 0xF && y != 0xF) {
-            V[0xF] = collisionFlag;
-        } else {
-            V[0xF] = storeVF;
-        }
+
     }
 }
