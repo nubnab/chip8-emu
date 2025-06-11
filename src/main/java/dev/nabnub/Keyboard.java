@@ -44,6 +44,10 @@ public class Keyboard implements KeyListener {
         return keys[keyCode];
     }
 
+     public boolean[] getKeys() {
+        return keys;
+     }
+
     public int getAnyPressedKey() {
         for (int i = 0; i < keys.length; i++) {
             if (keys[i]) {

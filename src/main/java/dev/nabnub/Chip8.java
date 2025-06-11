@@ -60,7 +60,6 @@ public class Chip8 {
             long currentTime = System.nanoTime();
             long elapsedTime = currentTime - lastFrameTime;
 
-
             //60Hz refresh rate
             long frameDuration = 16_666_667;
             if(elapsedTime >= frameDuration) {
@@ -107,6 +106,8 @@ public class Chip8 {
         switch (opcode & 0xF000) {
             case 0x0000:
                 switch (opcode) {
+                    case 0x0000: //No op
+                        break;
                     case 0x00E0:
                         display.clear();
                         break;
@@ -136,6 +137,7 @@ public class Chip8 {
                 V[x] = kk;
                 break;
             case 0x7000:
+                //Test
                 int result = V[x] + kk;
                 if (result >= 256) {
                     V[x] = result - 256;
@@ -150,15 +152,15 @@ public class Chip8 {
                         break;
                     case 0x8001:
                         V[x] |= V[y];
-                        V[0xF] = 0x0;
+                        //V[0xF] = 0x0; quirks
                         break;
                     case 0x8002:
                         V[x] &= V[y];
-                        V[0xF] = 0x0;
+                        //V[0xF] = 0x0; quirks
                         break;
                     case 0x8003:
                         V[x] ^= V[y];
-                        V[0xF] = 0x0;
+                        //V[0xF] = 0x0; quirks
                         break;
                     case 0x8004:
                         addVxVy(x, y);
@@ -185,7 +187,7 @@ public class Chip8 {
                 I = nnn;
                 break;
             case 0xB000:
-                this.pc = nnn + V[0];
+                this.pc = V[0] + nnn;
                 break;
             case 0xC000:
                 V[x] = (randomNum.nextInt(256) & kk);
@@ -208,10 +210,10 @@ public class Chip8 {
                 switch (opcode & 0xF0FF) {
                     case 0xF007:
                         //Investigate
-                        V[x] = delayTimer & 0xFF;
+                        V[x] = delayTimer; //& 0xFF;
                         break;
                     case 0xF015:
-                        delayTimer = V[x] & 0xFF;
+                        delayTimer = V[x]; //& 0xFF;
                         break;
                     case 0xF00A:
                         int pressedKey = keyboard.getAnyPressedKey();
@@ -222,16 +224,17 @@ public class Chip8 {
                         }
                         break;
                     case 0xF01E:
+                        //Investigate wrapping
                         I += V[x];
                         break;
                     case 0xF029:
                         //Investigate
-                        I = memory.getFONT_START() + ((V[x] & 0xF) * 5);
+                        I = memory.getFONT_START() + (V[x] * 5);
                         break;
                     case 0xF033:
                         memory.getMemory()[I] = V[x] / 100;
-                        memory.getMemory()[I + 1] = (V[x] % 100) / 10;
-                        memory.getMemory()[I + 2] = (V[x] % 100) % 10;
+                        memory.getMemory()[I + 1] = (V[x] / 10) % 10;
+                        memory.getMemory()[I + 2] = (V[x] % 10);
                         break;
                     case 0xF055:
                         for (int i = 0; i <= x; i++) {
