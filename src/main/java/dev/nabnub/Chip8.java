@@ -181,27 +181,27 @@ public class Chip8 {
                 }
                 break;
             case 0x9000:
-                if (V[x] != V[y]) incrementPC();
+                skipIfVxNotVy(x, y);
                 break;
             case 0xA000:
-                I = nnn;
+                setINNN(nnn);
                 break;
             case 0xB000:
-                this.pc = V[0] + nnn;
+                skipToNNNPlusV0(nnn);
                 break;
             case 0xC000:
-                V[x] = (randomNum.nextInt(256) & kk);
+                setVxRandomAndKK(x, kk);
                 break;
             case 0xD000:
                 draw(x, y, n);
                 break;
             case 0xE000:
                 switch (opcode & 0xF0FF) {
-                    case 0xE0A1:
-                        if (!keyboard.isKeyPressed(V[x])) incrementPC();
-                        break;
                     case 0xE09E:
-                        if (keyboard.isKeyPressed(V[x])) incrementPC();
+                        skipIfKeyPressed(x);
+                        break;
+                    case 0xE0A1:
+                        skipIfKeyNotPressed(x);
                         break;
                     default:
                 }
@@ -250,6 +250,32 @@ public class Chip8 {
                 break;
             default:
                 System.out.println("Unknown opcode: " + opcode);
+        }
+    }
+
+    private void skipIfKeyNotPressed(int x) {
+        if (!keyboard.isKeyPressed(V[x])) incrementPC();
+    }
+
+    private void skipIfKeyPressed(int x) {
+        if (keyboard.isKeyPressed(V[x])) incrementPC();
+    }
+
+    private void setVxRandomAndKK(int x, int kk) {
+        V[x] = (randomNum.nextInt(256) & kk);
+    }
+
+    private void skipToNNNPlusV0(int nnn) {
+        this.pc = V[0] + nnn;
+    }
+
+    private void setINNN(int nnn) {
+        I = nnn;
+    }
+
+    private void skipIfVxNotVy(int x, int y) {
+        if (V[x] != V[y]) {
+            incrementPC();
         }
     }
 
