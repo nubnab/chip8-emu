@@ -171,45 +171,66 @@ public class Chip8 {
         }
     }
 
-    private void decodeF000(int opcode, int x) {
-        switch (opcode & 0xF0FF) {
-            case 0xF007:
-                setVxDt(x);
+    public void fetchOpcode() {
+        opcode = memory.getMemory()[pc] << 8 | memory.getMemory()[pc + 1];
+    }
+
+    private void incrementPC() {
+        this.pc += 0x2;
+    }
+
+    private void decode0000(int opcode) {
+        switch (opcode) {
+            //No op
+            case 0x0000:
                 break;
-            case 0xF015:
-                setDtVx(x);
+            case 0x00E0:
+                display.clear();
                 break;
-            case 0xF00A:
-                waitForKeyPressAndRelease(x);
-                break;
-            case 0xF01E:
-                setIPlusVx(x);
-                break;
-            case 0xF029:
-                setISprite(x);
-                break;
-            case 0xF033:
-                setIVxBCD(x);
-                break;
-            case 0xF055:
-                setIV0Vx(x);
-                break;
-            case 0xF065:
-                readV0VxI(x);
+            case 0x00EE:
+                returnFromSubroutine();
                 break;
             default:
         }
     }
 
-    private void decodeE000(int opcode, int x) {
-        switch (opcode & 0xF0FF) {
-            case 0xE09E:
-                skipIfKeyPressed(x);
-                break;
-            case 0xE0A1:
-                skipIfKeyNotPressed(x);
-                break;
-            default:
+    private void jumpToNNN(int nnn) {
+        this.pc = nnn;
+    }
+
+    private void callSubroutine(int nnn) {
+        stack[++sp] = this.pc;
+        this.pc = nnn;
+    }
+
+    private void skipIfVxKK(int x, int kk) {
+        if (V[x] == kk) {
+            incrementPC();
+        }
+    }
+
+    private void skipIfVxNotKK(int x, int kk) {
+        if (V[x] != kk) {
+            incrementPC();
+        }
+    }
+
+    private void skipIfVxVy(int x, int y) {
+        if (V[x] == V[y]) {
+            incrementPC();
+        }
+    }
+
+    private void setVxKK(int x, int kk) {
+        V[x] = kk;
+    }
+
+    private void setVxPlusKK(int x, int kk) {
+        int result = V[x] + kk;
+        if (result >= 256) {
+            V[x] = result - 256;
+        } else {
+            V[x] = result;
         }
     }
 
@@ -246,94 +267,95 @@ public class Chip8 {
         }
     }
 
-    private void decode0000(int opcode) {
-        switch (opcode) {
-            //No op
-            case 0x0000:
-                break;
-            case 0x00E0:
-                display.clear();
-                break;
-            case 0x00EE:
-                returnFromSubroutine();
-                break;
-            default:
-        }
-    }
-
-    private void readV0VxI(int x) {
-        for(int i = 0; i <= x; i++) {
-            V[i] = (memory.getMemory()[I + i] & 0xFF);
-        }
-        I += x + 1;
-    }
-
-    private void setIV0Vx(int x) {
-        for (int i = 0; i <= x; i++) {
-            memory.getMemory()[I + i] = (V[i] & 0xFF);
-        }
-        I += x + 1;
-    }
-
-    private void setIVxBCD(int x) {
-        memory.getMemory()[I] = V[x] / 100;
-        memory.getMemory()[I + 1] = (V[x] / 10) % 10;
-        memory.getMemory()[I + 2] = (V[x] % 10);
-    }
-
-    private void setISprite(int x) {
-        I = memory.getFONT_START() + (V[x] * 5);
-    }
-
-    private void setIPlusVx(int x) {
-        I += V[x];
-    }
-
-    private void waitForKeyPressAndRelease(int x) {
-        int pressedKey = keyboard.getAnyPressedKey();
-        if (pressedKey != -1) {
-            V[x] = pressedKey;
-        } else {
-            this.pc -= 2;
-        }
-    }
-
-    private void setDtVx(int x) {
-        delayTimer = V[x];
-    }
-
-    private void setVxDt(int x) {
-        V[x] = delayTimer;
-    }
-
-    private void skipIfKeyNotPressed(int x) {
-        if (!keyboard.isKeyPressed(V[x])) incrementPC();
-    }
-
-    private void skipIfKeyPressed(int x) {
-        if (keyboard.isKeyPressed(V[x])) incrementPC();
-    }
-
-    private void setVxRandomAndKK(int x, int kk) {
-        V[x] = (randomNum.nextInt(256) & kk);
-    }
-
-    private void skipToNNNPlusV0(int nnn) {
-        this.pc = V[0] + nnn;
-    }
-
-    private void setINNN(int nnn) {
-        I = nnn;
-    }
-
     private void skipIfVxNotVy(int x, int y) {
         if (V[x] != V[y]) {
             incrementPC();
         }
     }
 
-    private void setVxXorVy(int x, int y) {
-        V[x] ^= V[y];
+    private void setINNN(int nnn) {
+        I = nnn;
+    }
+
+    private void skipToNNNPlusV0(int nnn) {
+        this.pc = V[0] + nnn;
+    }
+
+    private void setVxRandomAndKK(int x, int kk) {
+        V[x] = (randomNum.nextInt(256) & kk);
+    }
+
+    private void draw(int x, int y, int n) {
+        V[0xF] = 0;
+
+        for(int yline = 0; yline < n; yline++) {
+            int spriteByte = memory.getMemory()[I + yline];
+            for(int xline = 0; xline < 8; xline++) {
+                if((spriteByte & (0x80 >> xline)) != 0) {
+                    int pixelX = ((V[x] + xline) % 64);
+                    int pixelY = ((V[y] + yline) % 32);
+                    boolean wasPixelOn = display.togglePixel(pixelX, pixelY);
+                    if(!wasPixelOn) {
+                        V[0xF] = 1;
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void decodeE000(int opcode, int x) {
+        switch (opcode & 0xF0FF) {
+            case 0xE09E:
+                skipIfKeyPressed(x);
+                break;
+            case 0xE0A1:
+                skipIfKeyNotPressed(x);
+                break;
+            default:
+        }
+    }
+
+    private void decodeF000(int opcode, int x) {
+        switch (opcode & 0xF0FF) {
+            case 0xF007:
+                setVxDt(x);
+                break;
+            case 0xF015:
+                setDtVx(x);
+                break;
+            case 0xF00A:
+                waitForKeyPressAndRelease(x);
+                break;
+            case 0xF01E:
+                setIPlusVx(x);
+                break;
+            case 0xF029:
+                setISprite(x);
+                break;
+            case 0xF033:
+                setIVxBCD(x);
+                break;
+            case 0xF055:
+                setIV0Vx(x);
+                break;
+            case 0xF065:
+                readV0VxI(x);
+                break;
+            default:
+        }
+    }
+
+    private void returnFromSubroutine() {
+        this.pc = stack[sp--];
+    }
+
+    private void setVxVy(int x, int y) {
+        V[x] = V[y];
+    }
+
+    private void setVxOrVy(int x, int y) {
+        V[x] |= V[y];
         V[0xF] = 0x0;
     }
 
@@ -342,57 +364,9 @@ public class Chip8 {
         V[0xF] = 0x0;
     }
 
-    private void setVxOrVy(int x, int y) {
-        V[x] |= V[y];
+    private void setVxXorVy(int x, int y) {
+        V[x] ^= V[y];
         V[0xF] = 0x0;
-    }
-
-    private void setVxVy(int x, int y) {
-        V[x] = V[y];
-    }
-
-    private void setVxPlusKK(int x, int kk) {
-        int result = V[x] + kk;
-        if (result >= 256) {
-            V[x] = result - 256;
-        } else {
-            V[x] = result;
-        }
-    }
-
-    private void setVxKK(int x, int kk) {
-        V[x] = kk;
-    }
-
-    private void skipIfVxVy(int x, int y) {
-        if (V[x] == V[y]) {
-            incrementPC();
-        }
-    }
-
-    private void skipIfVxNotKK(int x, int kk) {
-        if (V[x] != kk) {
-            incrementPC();
-        }
-    }
-
-    private void skipIfVxKK(int x, int kk) {
-        if (V[x] == kk) {
-            incrementPC();
-        }
-    }
-
-    private void callSubroutine(int nnn) {
-        stack[++sp] = this.pc;
-        this.pc = nnn;
-    }
-
-    private void jumpToNNN(int nnn) {
-        this.pc = nnn;
-    }
-
-    private void returnFromSubroutine() {
-        this.pc = stack[sp--];
     }
 
     private void addVxVy(int x, int y) {
@@ -413,42 +387,68 @@ public class Chip8 {
         V[0xF] = carry;
     }
 
-    private void setVxVySHL(int x, int y) {
-        int carry = ((V[y] >>> 7) & 0x1) == 1 ? 1 : 0;
-        V[x] = (V[y] << 1) & 0xFF;
-        V[0xF] = carry;
-    }
-
     private void subVyVx(int x, int y) {
         int carry = (V[x] > V[y]) ? 0 : 1;
         V[x] = (V[y] - V[x]) & 0xFF;
         V[0xF] = carry;
     }
 
-    public void fetchOpcode() {
-        opcode = memory.getMemory()[pc] << 8 | memory.getMemory()[pc + 1];
+    private void setVxVySHL(int x, int y) {
+        int carry = ((V[y] >>> 7) & 0x1) == 1 ? 1 : 0;
+        V[x] = (V[y] << 1) & 0xFF;
+        V[0xF] = carry;
     }
 
-    private void incrementPC() {
-        this.pc += 0x2;
+    private void skipIfKeyPressed(int x) {
+        if (keyboard.isKeyPressed(V[x])) incrementPC();
     }
 
-    private void draw(int x, int y, int n) {
-        V[0xF] = 0;
+    private void skipIfKeyNotPressed(int x) {
+        if (!keyboard.isKeyPressed(V[x])) incrementPC();
+    }
 
-        for(int yline = 0; yline < n; yline++) {
-            int spriteByte = memory.getMemory()[I + yline];
-            for(int xline = 0; xline < 8; xline++) {
-                if((spriteByte & (0x80 >> xline)) != 0) {
-                    int pixelX = ((V[x] + xline) % 64);
-                    int pixelY = ((V[y] + yline) % 32);
-                    boolean wasPixelOn = display.togglePixel(pixelX, pixelY);
-                    if(!wasPixelOn) {
-                        V[0xF] = 1;
-                    }
-                }
-            }
+    private void setVxDt(int x) {
+        V[x] = delayTimer;
+    }
+
+    private void setDtVx(int x) {
+        delayTimer = V[x];
+    }
+
+    private void waitForKeyPressAndRelease(int x) {
+        int pressedKey = keyboard.getAnyPressedKey();
+        if (pressedKey != -1) {
+            V[x] = pressedKey;
+        } else {
+            this.pc -= 2;
         }
+    }
 
+    private void setIPlusVx(int x) {
+        I += V[x];
+    }
+
+    private void setISprite(int x) {
+        I = memory.getFONT_START() + (V[x] * 5);
+    }
+
+    private void setIVxBCD(int x) {
+        memory.getMemory()[I] = V[x] / 100;
+        memory.getMemory()[I + 1] = (V[x] / 10) % 10;
+        memory.getMemory()[I + 2] = (V[x] % 10);
+    }
+
+    private void setIV0Vx(int x) {
+        for (int i = 0; i <= x; i++) {
+            memory.getMemory()[I + i] = (V[i] & 0xFF);
+        }
+        I += x + 1;
+    }
+
+    private void readV0VxI(int x) {
+        for(int i = 0; i <= x; i++) {
+            V[i] = (memory.getMemory()[I + i] & 0xFF);
+        }
+        I += x + 1;
     }
 }
