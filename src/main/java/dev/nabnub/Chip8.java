@@ -107,6 +107,10 @@ public class Chip8 {
     }
 
     private void decodeAndExecute() {
+        decode(opcode);
+    }
+
+    private void decode(int opcode) {
         int x = (opcode & 0x0F00) >> 8;
         int y = (opcode & 0x00F0) >> 4;
         int n = opcode & 0x000F;
@@ -115,17 +119,7 @@ public class Chip8 {
 
         switch (opcode & 0xF000) {
             case 0x0000:
-                switch (opcode) {
-                    case 0x0000: //No op
-                        break;
-                    case 0x00E0:
-                        display.clear();
-                        break;
-                    case 0x00EE:
-                        returnFromSubroutine();
-                        break;
-                    default:
-                }
+                decode0000(opcode);
                 break;
             case 0x1000:
                 jumpToNNN(nnn);
@@ -149,36 +143,7 @@ public class Chip8 {
                 setVxPlusKK(x, kk);
                 break;
             case 0x8000:
-                switch (opcode & 0xF00F) {
-                    case 0x8000:
-                        setVxVy(x, y);
-                        break;
-                    case 0x8001:
-                        setVxOrVy(x, y);
-                        break;
-                    case 0x8002:
-                        setVxAndVy(x, y);
-                        break;
-                    case 0x8003:
-                        setVxXorVy(x, y);
-                        break;
-                    case 0x8004:
-                        addVxVy(x, y);
-                        break;
-                    case 0x8005:
-                        subVxVy(x, y);
-                        break;
-                    case 0x8006:
-                        setVxVySHR(x, y);
-                        break;
-                    case 0x8007:
-                        subVyVx(x, y);
-                        break;
-                    case 0x800E:
-                        setVxVySHL(x, y);
-                        break;
-                    default:
-                }
+                decode8000(opcode, x, y);
                 break;
             case 0x9000:
                 skipIfVxNotVy(x, y);
@@ -196,56 +161,124 @@ public class Chip8 {
                 draw(x, y, n);
                 break;
             case 0xE000:
-                switch (opcode & 0xF0FF) {
-                    case 0xE09E:
-                        skipIfKeyPressed(x);
-                        break;
-                    case 0xE0A1:
-                        skipIfKeyNotPressed(x);
-                        break;
-                    default:
-                }
+                decodeE000(opcode, x);
                 break;
             case 0xF000:
-                switch (opcode & 0xF0FF) {
-                    case 0xF007:
-                        setVxDt(x);
-                        break;
-                    case 0xF015:
-                        setDtVx(x);
-                        break;
-                    case 0xF00A:
-                        waitForKeyPressAndRelease(x);
-                        break;
-                    case 0xF01E:
-                        setIPlusVx(x);
-                        break;
-                    case 0xF029:
-                        setISprite(x);
-                        break;
-                    case 0xF033:
-                        memory.getMemory()[I] = V[x] / 100;
-                        memory.getMemory()[I + 1] = (V[x] / 10) % 10;
-                        memory.getMemory()[I + 2] = (V[x] % 10);
-                        break;
-                    case 0xF055:
-                        for (int i = 0; i <= x; i++) {
-                            memory.getMemory()[I + i] = (V[i] & 0xFF);
-                        }
-                        I += x + 1;
-                        break;
-                    case 0xF065:
-                        for(int i = 0; i <= x; i++) {
-                            V[i] = (memory.getMemory()[I + i] & 0xFF);
-                        }
-                        I += x + 1;
-                        break;
-                    default:
-                }
+                decodeF000(opcode, x);
                 break;
             default:
                 System.out.println("Unknown opcode: " + opcode);
         }
+    }
+
+    private void decodeF000(int opcode, int x) {
+        switch (opcode & 0xF0FF) {
+            case 0xF007:
+                setVxDt(x);
+                break;
+            case 0xF015:
+                setDtVx(x);
+                break;
+            case 0xF00A:
+                waitForKeyPressAndRelease(x);
+                break;
+            case 0xF01E:
+                setIPlusVx(x);
+                break;
+            case 0xF029:
+                setISprite(x);
+                break;
+            case 0xF033:
+                setIVxBCD(x);
+                break;
+            case 0xF055:
+                setIV0Vx(x);
+                break;
+            case 0xF065:
+                readV0VxI(x);
+                break;
+            default:
+        }
+    }
+
+    private void decodeE000(int opcode, int x) {
+        switch (opcode & 0xF0FF) {
+            case 0xE09E:
+                skipIfKeyPressed(x);
+                break;
+            case 0xE0A1:
+                skipIfKeyNotPressed(x);
+                break;
+            default:
+        }
+    }
+
+    private void decode8000(int opcode, int x, int y) {
+        switch (opcode & 0xF00F) {
+            case 0x8000:
+                setVxVy(x, y);
+                break;
+            case 0x8001:
+                setVxOrVy(x, y);
+                break;
+            case 0x8002:
+                setVxAndVy(x, y);
+                break;
+            case 0x8003:
+                setVxXorVy(x, y);
+                break;
+            case 0x8004:
+                addVxVy(x, y);
+                break;
+            case 0x8005:
+                subVxVy(x, y);
+                break;
+            case 0x8006:
+                setVxVySHR(x, y);
+                break;
+            case 0x8007:
+                subVyVx(x, y);
+                break;
+            case 0x800E:
+                setVxVySHL(x, y);
+                break;
+            default:
+        }
+    }
+
+    private void decode0000(int opcode) {
+        switch (opcode) {
+            //No op
+            case 0x0000:
+                break;
+            case 0x00E0:
+                display.clear();
+                break;
+            case 0x00EE:
+                returnFromSubroutine();
+                break;
+            default:
+        }
+    }
+
+    private void readV0VxI(int x) {
+        for(int i = 0; i <= x; i++) {
+            V[i] = (memory.getMemory()[I + i] & 0xFF);
+        }
+        I += x + 1;
+    }
+
+    private void setIV0Vx(int x) {
+        for (int i = 0; i <= x; i++) {
+            memory.getMemory()[I + i] = (V[i] & 0xFF);
+        }
+        I += x + 1;
+    }
+
+    private void setIVxBCD(int x) {
+        memory.getMemory()[I] = V[x] / 100;
+        memory.getMemory()[I + 1] = (V[x] / 10) % 10;
+        memory.getMemory()[I + 2] = (V[x] % 10);
     }
 
     private void setISprite(int x) {
