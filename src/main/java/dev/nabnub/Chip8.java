@@ -137,21 +137,16 @@ public class Chip8 {
                 skipIfVxKK(x, kk);
                 break;
             case 0x4000:
-                if (V[x] != kk) incrementPC();
+                skipIfVxNotKK(x, kk);
                 break;
             case 0x5000:
-                if (V[x] == V[y]) incrementPC();
+                skipIfVxVy(x, y);
                 break;
             case 0x6000:
-                V[x] = kk;
+                setVxKK(x, kk);
                 break;
             case 0x7000:
-                int result = V[x] + kk;
-                if (result >= 256) {
-                    V[x] = result - 256;
-                } else {
-                    V[x] = result;
-                }
+                setVxPlusKK(x, kk);
                 break;
             case 0x8000:
                 switch (opcode & 0xF00F) {
@@ -258,6 +253,31 @@ public class Chip8 {
                 break;
             default:
                 System.out.println("Unknown opcode: " + opcode);
+        }
+    }
+
+    private void setVxPlusKK(int x, int kk) {
+        int result = V[x] + kk;
+        if (result >= 256) {
+            V[x] = result - 256;
+        } else {
+            V[x] = result;
+        }
+    }
+
+    private void setVxKK(int x, int kk) {
+        V[x] = kk;
+    }
+
+    private void skipIfVxVy(int x, int y) {
+        if (V[x] == V[y]) {
+            incrementPC();
+        }
+    }
+
+    private void skipIfVxNotKK(int x, int kk) {
+        if (V[x] != kk) {
+            incrementPC();
         }
     }
 
