@@ -151,19 +151,16 @@ public class Chip8 {
             case 0x8000:
                 switch (opcode & 0xF00F) {
                     case 0x8000:
-                        V[x] = V[y];
+                        setVxVy(x, y);
                         break;
                     case 0x8001:
-                        V[x] |= V[y];
-                        V[0xF] = 0x0;
+                        setVxOrVy(x, y);
                         break;
                     case 0x8002:
-                        V[x] &= V[y];
-                        V[0xF] = 0x0;
+                        setVxAndVy(x, y);
                         break;
                     case 0x8003:
-                        V[x] ^= V[y];
-                        V[0xF] = 0x0;
+                        setVxXorVy(x, y);
                         break;
                     case 0x8004:
                         addVxVy(x, y);
@@ -254,6 +251,25 @@ public class Chip8 {
             default:
                 System.out.println("Unknown opcode: " + opcode);
         }
+    }
+
+    private void setVxXorVy(int x, int y) {
+        V[x] ^= V[y];
+        V[0xF] = 0x0;
+    }
+
+    private void setVxAndVy(int x, int y) {
+        V[x] &= V[y];
+        V[0xF] = 0x0;
+    }
+
+    private void setVxOrVy(int x, int y) {
+        V[x] |= V[y];
+        V[0xF] = 0x0;
+    }
+
+    private void setVxVy(int x, int y) {
+        V[x] = V[y];
     }
 
     private void setVxPlusKK(int x, int kk) {
