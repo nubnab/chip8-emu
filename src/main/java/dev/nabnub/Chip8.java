@@ -209,24 +209,19 @@ public class Chip8 {
             case 0xF000:
                 switch (opcode & 0xF0FF) {
                     case 0xF007:
-                        V[x] = delayTimer;
+                        setVxDt(x);
                         break;
                     case 0xF015:
-                        delayTimer = V[x];
+                        setDtVx(x);
                         break;
                     case 0xF00A:
-                        int pressedKey = keyboard.getAnyPressedKey();
-                        if (pressedKey != -1) {
-                            V[x] = pressedKey;
-                        } else {
-                            this.pc -= 2;
-                        }
+                        waitForKeyPressAndRelease(x);
                         break;
                     case 0xF01E:
-                        I += V[x];
+                        setIPlusVx(x);
                         break;
                     case 0xF029:
-                        I = memory.getFONT_START() + (V[x] * 5);
+                        setISprite(x);
                         break;
                     case 0xF033:
                         memory.getMemory()[I] = V[x] / 100;
@@ -251,6 +246,31 @@ public class Chip8 {
             default:
                 System.out.println("Unknown opcode: " + opcode);
         }
+    }
+
+    private void setISprite(int x) {
+        I = memory.getFONT_START() + (V[x] * 5);
+    }
+
+    private void setIPlusVx(int x) {
+        I += V[x];
+    }
+
+    private void waitForKeyPressAndRelease(int x) {
+        int pressedKey = keyboard.getAnyPressedKey();
+        if (pressedKey != -1) {
+            V[x] = pressedKey;
+        } else {
+            this.pc -= 2;
+        }
+    }
+
+    private void setDtVx(int x) {
+        delayTimer = V[x];
+    }
+
+    private void setVxDt(int x) {
+        V[x] = delayTimer;
     }
 
     private void skipIfKeyNotPressed(int x) {
