@@ -4,10 +4,11 @@ import javax.swing.*;
 import java.awt.*;
 
 public class Display extends JPanel {
-    private boolean[][] pixels;
-    private int scale = 10;
-    private int width = 64;
-    private int height = 32;
+
+    private final boolean[][] pixels;
+    private final int scale = 10;
+    private final int width = 64;
+    private final int height = 32;
 
     public Display() {
         pixels = new boolean[width][height];
@@ -27,6 +28,10 @@ public class Display extends JPanel {
             }
         }
         repaint();
+    }
+
+    public boolean[][] getPixels() {
+        return pixels;
     }
 
     @Override

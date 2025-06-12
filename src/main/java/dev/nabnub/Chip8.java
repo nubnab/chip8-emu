@@ -67,15 +67,15 @@ public class Chip8 {
 
                 for (int i = 0; i < instructionsPerFrame; i++) {
                     fetch();
-                    for(int j = 0; j < V.length; j++){
-                        if(V[j] < 0){
-                            System.out.println("V[" + i + "] = " + V[j]);
+                    for (int value : V) {
+                        if (value < 0) {
+                            System.out.println("V[" + i + "] = " + value);
                         }
                     }
                     decodeAndExecute();
-                    for(int j = 0; j < V.length; j++){
-                        if(V[j] < 0){
-                            System.out.println("V[" + i + "] = " + V[j]);
+                    for (int k : V) {
+                        if (k < 0) {
+                            System.out.println("V[" + i + "] = " + k);
                         }
                     }
                 }
@@ -301,7 +301,6 @@ public class Chip8 {
                 }
             }
         }
-
     }
 
     private void decodeE000(int opcode, int x) {
@@ -450,5 +449,9 @@ public class Chip8 {
             V[i] = (memory.getMemory()[I + i] & 0xFF);
         }
         I += x + 1;
+    }
+
+    public Display getDisplay() {
+        return display;
     }
 }
