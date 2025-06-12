@@ -122,20 +122,19 @@ public class Chip8 {
                         display.clear();
                         break;
                     case 0x00EE:
-                        this.pc = stack[sp--];
+                        returnFromSubroutine();
                         break;
                     default:
                 }
                 break;
             case 0x1000:
-                this.pc = nnn;
+                jumpToNNN(nnn);
                 break;
             case 0x2000:
-                stack[++sp] = this.pc;
-                this.pc = nnn;
+                callSubroutine(nnn);
                 break;
             case 0x3000:
-                if (V[x] == kk) incrementPC();
+                skipIfVxKK(x, kk);
                 break;
             case 0x4000:
                 if (V[x] != kk) incrementPC();
@@ -260,6 +259,25 @@ public class Chip8 {
             default:
                 System.out.println("Unknown opcode: " + opcode);
         }
+    }
+
+    private void skipIfVxKK(int x, int kk) {
+        if (V[x] == kk) {
+            incrementPC();
+        }
+    }
+
+    private void callSubroutine(int nnn) {
+        stack[++sp] = this.pc;
+        this.pc = nnn;
+    }
+
+    private void jumpToNNN(int nnn) {
+        this.pc = nnn;
+    }
+
+    private void returnFromSubroutine() {
+        this.pc = stack[sp--];
     }
 
     private void addVxVy(int x, int y) {
