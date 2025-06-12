@@ -1,6 +1,7 @@
 package dev.nabnub;
 
 public class Memory {
+    public static final int MEMORY_START = 0x200;
     private final int[] memory;                 //Chip 8 memory
     private final int FONT_START = 0x050;
 
@@ -38,7 +39,7 @@ public class Memory {
 
     public void loadProgram(byte[] b) {
         for(int i = 0; i < b.length; i++) {
-            memory[i + 512] = (b[i] & 0xFF);
+            memory[MEMORY_START + i] = (b[i] & 0xFF);
         }
     }
 

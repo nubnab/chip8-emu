@@ -1,5 +1,6 @@
 package dev.nabnub;
 
+import java.util.Arrays;
 import java.util.Random;
 
 public class CPU {
@@ -392,7 +393,20 @@ public class CPU {
         this.pc += 0x2;
     }
 
+    protected int getPC() {
+        return pc;
+    }
 
+    protected int getSp() {
+        return sp;
+    }
 
+    protected int[] getStackCopy() {
+        return Arrays.copyOf(this.stack, this.stack.length);
+    }
+
+    protected int[] getRegistersCopy() {
+        return Arrays.copyOf(this.v, this.v.length);
+    }
 
 }
