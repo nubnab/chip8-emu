@@ -211,7 +211,7 @@ public class CPUTest {
     }
 
     @Test
-    @DisplayName("8XY2 - Vx ^ Vy, VF = 0")
+    @DisplayName("8XY3 - Vx ^ Vy, VF = 0")
     void setVx_shouldBeVxXorVy_andResetVf() {
         setUpMemory(0x200, 0x6F22);
         setUpMemory(0x202, 0x6002);
@@ -224,12 +224,107 @@ public class CPUTest {
         assertEquals(0x0, cpu.getRegistersCopy()[0xF]);
     }
 
+    @Test
+    @DisplayName("8XY4 - Vx += Vy, VF = 0 (underflow)")
+    void setVx_shouldBeVxPlusVy_andSetVF_Underflow() {
+        setUpMemory(0x200, 0x6022);
+        setUpMemory(0x202, 0x6155);
+        setUpMemory(0x204, 0x8014);
 
+        runCycles(3);
 
+        assertEquals(0x77, cpu.getRegistersCopy()[0]);
+        assertEquals(0x0, cpu.getRegistersCopy()[0xF]);
+    }
 
+    @Test
+    @DisplayName("8XY4 - Vx += Vy, VF = 1 (overflow)")
+    void setVx_shouldBeVxPlusVy_andSetVF_Overflow() {
+        //V[x] = 187
+        setUpMemory(0x200, 0x60BB);
+        //V[y] = 204
+        setUpMemory(0x202, 0x61CC);
+        setUpMemory(0x204, 0x8014);
 
+        runCycles(3);
 
+        // Overflow, 391              (9 bits),
+        // V[x] = -121                (8 bit 2's complement),
+        // V[x] = 135 & 0xFF = (0x87) (8bit unsigned)
+        assertEquals(0x87, cpu.getRegistersCopy()[0]);
+        assertEquals(0x1, cpu.getRegistersCopy()[0xF]);
+    }
 
+    @Test
+    @DisplayName("8XY4 - Vx += Vy, VF = 0 (underflow) VF = first parameter")
+    void setVx_shouldBeVxPlusVy_andSetVF_Underflow_firstParameterVF() {
+        setUpMemory(0x200, 0x6F22);
+        setUpMemory(0x202, 0x6155);
+        setUpMemory(0x204, 0x8F14);
 
+        runCycles(3);
+
+        assertEquals(0x0, cpu.getRegistersCopy()[0xF]);
+    }
+
+    @Test
+    @DisplayName("8XY4 - Vx += Vy, VF = 1 (overflow) VF = first parameter")
+    void setVx_shouldBeVxPlusVy_andSetVF_Overflow_firstParameterVF() {
+        setUpMemory(0x200, 0x6FBB);
+        setUpMemory(0x202, 0x61CC);
+        setUpMemory(0x204, 0x8F14);
+
+        runCycles(3);
+
+        assertEquals(0x1, cpu.getRegistersCopy()[0xF]);
+    }
+
+    @Test
+    @DisplayName("8XY4 - Vx += Vy, VF = 0 (underflow) VF = second parameter")
+    void setVx_shouldBeVxPlusVy_andSetVF_Underflow_secondParameterVF() {
+        setUpMemory(0x200, 0x6022);
+        setUpMemory(0x202, 0x6F55);
+        setUpMemory(0x204, 0x80F4);
+
+        runCycles(3);
+
+        assertEquals(0x77, cpu.getRegistersCopy()[0]);
+        assertEquals(0x0, cpu.getRegistersCopy()[0xF]);
+    }
+
+    @Test
+    @DisplayName("8XY4 - Vx += Vy, VF = 1 (overflow) VF = second parameter")
+    void setVx_shouldBeVxPlusVy_andSetVF_Overflow_secondParameterVF() {
+        setUpMemory(0x200, 0x60BB);
+        setUpMemory(0x202, 0x6FCC);
+        setUpMemory(0x204, 0x80F4);
+
+        runCycles(3);
+
+        assertEquals(0x87, cpu.getRegistersCopy()[0]);
+        assertEquals(0x1, cpu.getRegistersCopy()[0xF]);
+    }
+
+    @Test
+    @DisplayName("8XY4 - Vx += Vy, VF = 0 (underflow) VF = both parameters")
+    void setVx_shouldBeVxPlusVy_andSetVF_Underflow_bothParameterVF() {
+        setUpMemory(0x200, 0x6F22);
+        setUpMemory(0x202, 0x8FF4);
+
+        runCycles(2);
+
+        assertEquals(0x0, cpu.getRegistersCopy()[0xF]);
+    }
+
+    @Test
+    @DisplayName("8XY4 - Vx += Vy, VF = 1 (overflow) VF = both parameters")
+    void setVx_shouldBeVxPlusVy_andSetVF_Overflow_bothParameterVF() {
+        setUpMemory(0x200, 0x6FBB);
+        setUpMemory(0x202, 0x8FF4);
+
+        runCycles(2);
+
+        assertEquals(0x1, cpu.getRegistersCopy()[0xF]);
+    }
 
 }
