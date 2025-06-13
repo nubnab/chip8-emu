@@ -226,7 +226,7 @@ public class CPUTest {
 
     @Test
     @DisplayName("8XY4 - Vx += Vy, VF = 0")
-    void setVx_shouldBeVxPlusVy_underflow() {
+    void setVx_shouldBeVxPlusVy_noCarry() {
         setUpMemory(0x200, 0x6022);
         setUpMemory(0x202, 0x6155);
         setUpMemory(0x204, 0x8014);
@@ -240,7 +240,7 @@ public class CPUTest {
 
     @Test
     @DisplayName("8XY4 - Vx += Vy, VF = 1")
-    void setVx_shouldBeVxPlusVy_overflow() {
+    void setVx_shouldBeVxPlusVy_carry() {
         setUpMemory(0x200, 0x60BB);
         setUpMemory(0x202, 0x61CC);
         setUpMemory(0x204, 0x8014);
@@ -253,7 +253,7 @@ public class CPUTest {
 
     @Test
     @DisplayName("8XY4 - Vx += Vy, VF = first param, VF = 0")
-    void setVx_shouldBeVxPlusVy_firstParamVf_underflow() {
+    void setVx_shouldBeVxPlusVy_firstParamVf_noCarry() {
         setUpMemory(0x200, 0x6F22);
         setUpMemory(0x202, 0x6155);
         setUpMemory(0x204, 0x8F14);
@@ -265,7 +265,7 @@ public class CPUTest {
 
     @Test
     @DisplayName("8XY4 - Vx += Vy, VF = first param, VF = 1")
-    void setVx_shouldBeVxPlusVy_firstParamVf_overflow() {
+    void setVx_shouldBeVxPlusVy_firstParamVf_carry() {
         setUpMemory(0x200, 0x6FBB);
         setUpMemory(0x202, 0x61CC);
         setUpMemory(0x204, 0x8F14);
@@ -278,7 +278,7 @@ public class CPUTest {
 
     @Test
     @DisplayName("8XY4 - Vx += Vy, Zero addition, VF = 0")
-    void setVx_shouldBeVxPlusVy_ZeroAddition() {
+    void setVx_shouldBeVxPlusVy_zeroAddition_noCarry() {
         setUpMemory(0x200, 0x6000);
         setUpMemory(0x202, 0x6100);
         setUpMemory(0x204, 0x8014);
@@ -291,7 +291,7 @@ public class CPUTest {
 
     @Test
     @DisplayName("8XY4 - Vx += Vy, Max addition, VF = 1")
-    void setVx_shouldBeVxPlusVy_MaxAddition() {
+    void setVx_shouldBeVxPlusVy_maxAddition_carry() {
         setUpMemory(0x200, 0x60FF);
         setUpMemory(0x202, 0x61FF);
         setUpMemory(0x204, 0x8014);
@@ -301,5 +301,83 @@ public class CPUTest {
         assertEquals((0xFF * 2) & 0xFF, cpu.getRegistersCopy()[0]);
         assertEquals(0x1, cpu.getRegistersCopy()[0xF]);
     }
+
+    @Test
+    @DisplayName("8XY5 - Vx -= Vy, VF = 1")
+    void setVx_shouldBeVxMinusVy_noUnderflow() {
+        setUpMemory(0x200, 0x6044);
+        setUpMemory(0x202, 0x6133);
+        setUpMemory(0x204, 0x8015);
+
+        runCycles(3);
+
+        assertEquals(0x44 - 0x33, cpu.getRegistersCopy()[0]);
+        assertEquals(0x1, cpu.getRegistersCopy()[0xF]);
+    };
+
+    @Test
+    @DisplayName("8XY5 - Vx -= Vy, VF = 0")
+    void setVx_shouldBeVxMinusVy_underflow() {
+        setUpMemory(0x200, 0x6044);
+        setUpMemory(0x202, 0x6155);
+        setUpMemory(0x204, 0x8015);
+
+        runCycles(3);
+
+        assertEquals((0x44 - 0x55) & 0xFF, cpu.getRegistersCopy()[0]);
+        assertEquals(0x0, cpu.getRegistersCopy()[0xF]);
+    };
+
+    @Test
+    @DisplayName("8XY5 - Vx -= Vy, VF = first param, VF = 1")
+    void setVx_shouldBeVxMinusVy_firstParamVf_noUnderflow() {
+        setUpMemory(0x200, 0x6F44);
+        setUpMemory(0x202, 0x6133);
+        setUpMemory(0x204, 0x8F15);
+
+        runCycles(3);
+
+        assertEquals(0x1, cpu.getRegistersCopy()[0xF]);
+    };
+
+    @Test
+    @DisplayName("8XY5 - Vx -= Vy, VF = first param, VF = 0")
+    void setVx_shouldBeVxMinusVy_firstParamVf_underflow() {
+        setUpMemory(0x200, 0x6F44);
+        setUpMemory(0x202, 0x6155);
+        setUpMemory(0x204, 0x8F15);
+
+        runCycles(3);
+
+        assertEquals(0x0, cpu.getRegistersCopy()[0xF]);
+    };
+
+    @Test
+    @DisplayName("8XY5 - Vx -= Vy, Zero subtraction")
+    void setVx_shouldBeVxMinusVy_zeroSubtraction() {
+        setUpMemory(0x200, 0x6000);
+        setUpMemory(0x202, 0x6100);
+        setUpMemory(0x204, 0x8015);
+
+        runCycles(3);
+
+        assertEquals(0x0, cpu.getRegistersCopy()[0]);
+        assertEquals(0x1, cpu.getRegistersCopy()[0xF]);
+    };
+
+    @Test
+    @DisplayName("8XY5 - Vx -= Vy, Max subtraction")
+    void setVx_shouldBeVxMinusVy_maxSubtraction() {
+        setUpMemory(0x200, 0x60FF);
+        setUpMemory(0x202, 0x61FF);
+        setUpMemory(0x204, 0x8015);
+
+        runCycles(3);
+
+        assertEquals(0x0, cpu.getRegistersCopy()[0]);
+        assertEquals(0x1, cpu.getRegistersCopy()[0xF]);
+    };
+
+
 
 }
