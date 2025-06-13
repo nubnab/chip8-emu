@@ -73,10 +73,39 @@ public class CPUTest {
     }
 
     @Test
-    @DisplayName("3XKK")
-    void when_Vx_equals_KK_pc_shouldBeIncremented() {
-        
+    @DisplayName("3XKK - Vx != kk")
+    void skipIfVxEqualsKK_ShouldNotSkip() {
+        setUpMemory(0x200, 0x6044);
+        setUpMemory(0x202, 0x3033);
+
+        cpu.cycle();
+
+        assertEquals(0x202, cpu.getPC());
+
+        cpu.cycle();
+
+        assertEquals(0x204, cpu.getPC());
     }
+
+    @Test
+    @DisplayName("3XKK - Vx == kk")
+    void skipIfVxEqualsKK_ShouldSkip() {
+        setUpMemory(0x200, 0x6033);
+        setUpMemory(0x202, 0x3033);
+
+        cpu.cycle();
+
+        assertEquals(0x33, cpu.getRegistersCopy()[0]);
+        assertEquals(0x202, cpu.getPC());
+
+        cpu.cycle();
+
+        assertEquals(0x206, cpu.getPC());
+    }
+
+
+
+
 
 
 
