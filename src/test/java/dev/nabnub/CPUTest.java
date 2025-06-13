@@ -25,6 +25,12 @@ public class CPUTest {
         memory.getMemory()[memStart + 1] = opcode & 0x00FF;
     }
 
+    private void runCycles(int n) {
+        for (int i = 0; i < n; i++) {
+            cpu.cycle();
+        }
+    }
+
     @Test
     @DisplayName("00E0")
     void display_shouldBeCleared() {
@@ -78,8 +84,7 @@ public class CPUTest {
         setUpMemory(0x200, 0x6044);
         setUpMemory(0x202, 0x3033);
 
-        cpu.cycle();
-        cpu.cycle();
+        runCycles(2);
 
         assertEquals(0x204, cpu.getPC());
     }
@@ -90,8 +95,7 @@ public class CPUTest {
         setUpMemory(0x200, 0x6033);
         setUpMemory(0x202, 0x3033);
 
-        cpu.cycle();
-        cpu.cycle();
+        runCycles(2);
 
         assertEquals(0x206, cpu.getPC());
     }
@@ -102,8 +106,7 @@ public class CPUTest {
         setUpMemory(0x200, 0x6033);
         setUpMemory(0x202, 0x4033);
 
-        cpu.cycle();
-        cpu.cycle();
+        runCycles(2);
 
         assertEquals(0x204, cpu.getPC());
     }
@@ -114,11 +117,46 @@ public class CPUTest {
         setUpMemory(0x200, 0x6033);
         setUpMemory(0x202, 0x4044);
 
-        cpu.cycle();
-        cpu.cycle();
+        runCycles(2);
 
         assertEquals(0x206, cpu.getPC());
     }
+
+    @Test
+    @DisplayName("5XYO - Vx != Vy")
+    void skipIfVxEqualsVy_shouldNotSkip() {
+        setUpMemory(0x200, 0x6011);
+        setUpMemory(0x202, 0x6122);
+        setUpMemory(0x204, 0x5010);
+
+        runCycles(3);
+
+        assertEquals(0x206, cpu.getPC());
+    }
+
+    @Test
+    @DisplayName("5XYO - Vx == Vy")
+    void skipIfVxEqualsVy_shouldSkip() {
+        setUpMemory(0x200, 0x6022);
+        setUpMemory(0x202, 0x6122);
+        setUpMemory(0x204, 0x5010);
+
+        runCycles(3);
+
+        assertEquals(0x208, cpu.getPC());
+    }
+
+    @Test
+    @DisplayName("6XKK - Vx = kk")
+    void setVx_shouldBeKK() {
+        setUpMemory(0x200, 0x6044);
+
+        cpu.cycle();
+
+        assertEquals(0x44, cpu.getRegistersCopy()[0]);
+    }
+
+
 
 
 
