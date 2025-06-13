@@ -225,39 +225,35 @@ public class CPUTest {
     }
 
     @Test
-    @DisplayName("8XY4 - Vx += Vy, VF = 0 (underflow)")
-    void setVx_shouldBeVxPlusVy_andSetVF_Underflow() {
+    @DisplayName("8XY4 - Vx += Vy, VF = 0")
+    void setVx_shouldBeVxPlusVy_underflow() {
         setUpMemory(0x200, 0x6022);
         setUpMemory(0x202, 0x6155);
         setUpMemory(0x204, 0x8014);
 
         runCycles(3);
 
-        assertEquals(0x77, cpu.getRegistersCopy()[0]);
+        assertEquals(0x22 + 0x55, cpu.getRegistersCopy()[0]);
         assertEquals(0x0, cpu.getRegistersCopy()[0xF]);
     }
 
+
     @Test
-    @DisplayName("8XY4 - Vx += Vy, VF = 1 (overflow)")
-    void setVx_shouldBeVxPlusVy_andSetVF_Overflow() {
-        //V[x] = 187
+    @DisplayName("8XY4 - Vx += Vy, VF = 1")
+    void setVx_shouldBeVxPlusVy_overflow() {
         setUpMemory(0x200, 0x60BB);
-        //V[y] = 204
         setUpMemory(0x202, 0x61CC);
         setUpMemory(0x204, 0x8014);
 
         runCycles(3);
 
-        // Overflow, 391              (9 bits),
-        // V[x] = -121                (8 bit 2's complement),
-        // V[x] = 135 & 0xFF = (0x87) (8bit unsigned)
-        assertEquals(0x87, cpu.getRegistersCopy()[0]);
+        assertEquals((0xBB + 0xCC) & 0xFF, cpu.getRegistersCopy()[0]);
         assertEquals(0x1, cpu.getRegistersCopy()[0xF]);
     }
 
     @Test
-    @DisplayName("8XY4 - Vx += Vy, VF = 0 (underflow) VF = first parameter")
-    void setVx_shouldBeVxPlusVy_andSetVF_Underflow_firstParameterVF() {
+    @DisplayName("8XY4 - Vx += Vy, VF = first param, VF = 0")
+    void setVx_shouldBeVxPlusVy_firstParamVf_underflow() {
         setUpMemory(0x200, 0x6F22);
         setUpMemory(0x202, 0x6155);
         setUpMemory(0x204, 0x8F14);
@@ -268,8 +264,8 @@ public class CPUTest {
     }
 
     @Test
-    @DisplayName("8XY4 - Vx += Vy, VF = 1 (overflow) VF = first parameter")
-    void setVx_shouldBeVxPlusVy_andSetVF_Overflow_firstParameterVF() {
+    @DisplayName("8XY4 - Vx += Vy, VF = first param, VF = 1")
+    void setVx_shouldBeVxPlusVy_firstParamVf_overflow() {
         setUpMemory(0x200, 0x6FBB);
         setUpMemory(0x202, 0x61CC);
         setUpMemory(0x204, 0x8F14);
@@ -279,51 +275,30 @@ public class CPUTest {
         assertEquals(0x1, cpu.getRegistersCopy()[0xF]);
     }
 
+
     @Test
-    @DisplayName("8XY4 - Vx += Vy, VF = 0 (underflow) VF = second parameter")
-    void setVx_shouldBeVxPlusVy_andSetVF_Underflow_secondParameterVF() {
-        setUpMemory(0x200, 0x6022);
-        setUpMemory(0x202, 0x6F55);
-        setUpMemory(0x204, 0x80F4);
+    @DisplayName("8XY4 - Vx += Vy, Zero addition, VF = 0")
+    void setVx_shouldBeVxPlusVy_ZeroAddition() {
+        setUpMemory(0x200, 0x6000);
+        setUpMemory(0x202, 0x6100);
+        setUpMemory(0x204, 0x8014);
 
         runCycles(3);
 
-        assertEquals(0x77, cpu.getRegistersCopy()[0]);
+        assertEquals(0x0, cpu.getRegistersCopy()[0]);
         assertEquals(0x0, cpu.getRegistersCopy()[0xF]);
     }
 
     @Test
-    @DisplayName("8XY4 - Vx += Vy, VF = 1 (overflow) VF = second parameter")
-    void setVx_shouldBeVxPlusVy_andSetVF_Overflow_secondParameterVF() {
-        setUpMemory(0x200, 0x60BB);
-        setUpMemory(0x202, 0x6FCC);
-        setUpMemory(0x204, 0x80F4);
+    @DisplayName("8XY4 - Vx += Vy, Max addition, VF = 1")
+    void setVx_shouldBeVxPlusVy_MaxAddition() {
+        setUpMemory(0x200, 0x60FF);
+        setUpMemory(0x202, 0x61FF);
+        setUpMemory(0x204, 0x8014);
 
         runCycles(3);
 
-        assertEquals(0x87, cpu.getRegistersCopy()[0]);
-        assertEquals(0x1, cpu.getRegistersCopy()[0xF]);
-    }
-
-    @Test
-    @DisplayName("8XY4 - Vx += Vy, VF = 0 (underflow) VF = both parameters")
-    void setVx_shouldBeVxPlusVy_andSetVF_Underflow_bothParameterVF() {
-        setUpMemory(0x200, 0x6F22);
-        setUpMemory(0x202, 0x8FF4);
-
-        runCycles(2);
-
-        assertEquals(0x0, cpu.getRegistersCopy()[0xF]);
-    }
-
-    @Test
-    @DisplayName("8XY4 - Vx += Vy, VF = 1 (overflow) VF = both parameters")
-    void setVx_shouldBeVxPlusVy_andSetVF_Overflow_bothParameterVF() {
-        setUpMemory(0x200, 0x6FBB);
-        setUpMemory(0x202, 0x8FF4);
-
-        runCycles(2);
-
+        assertEquals((0xFF * 2) & 0xFF, cpu.getRegistersCopy()[0]);
         assertEquals(0x1, cpu.getRegistersCopy()[0xF]);
     }
 
