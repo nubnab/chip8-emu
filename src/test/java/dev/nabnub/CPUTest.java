@@ -32,7 +32,7 @@ public class CPUTest {
     }
 
     @Test
-    @DisplayName("00E0")
+    @DisplayName("00E0 - Display clear")
     void display_shouldBeCleared() {
         display.togglePixel(0, 0);
         assertTrue(display.getPixels()[0][0]);
@@ -41,7 +41,7 @@ public class CPUTest {
     }
 
     @Test
-    @DisplayName("00EE")
+    @DisplayName("00EE - Return from subroutine")
     void returnFromSubroutine() {
         setUpMemory(0x200, 0x2300);
         setUpMemory(0x300, 0x00EE);
@@ -58,7 +58,7 @@ public class CPUTest {
     }
 
     @Test
-    @DisplayName("1NNN")
+    @DisplayName("1NNN - Unconditional jump to NNN")
     void pc_shouldBe_NNN() {
         setUpMemory(0x200, 0x1234);
 
@@ -68,7 +68,7 @@ public class CPUTest {
     }
 
     @Test
-    @DisplayName("2NNN")
+    @DisplayName("2NNN - Conditional jump to NNN")
     void callSubroutine() {
         setUpMemory(0x200, 0x2300);
 
@@ -154,6 +154,32 @@ public class CPUTest {
         cpu.cycle();
 
         assertEquals(0x44, cpu.getRegistersCopy()[0]);
+    }
+
+    @Test
+    @DisplayName("7XNN - Vx += NN")
+    void setVx_shouldBeVxPlusNN() {
+        setUpMemory(0x200, 0x7064);
+        setUpMemory(0x202, 0x7064);
+
+        cpu.cycle();
+
+        assertEquals(0x64, cpu.getRegistersCopy()[0]);
+
+        cpu.cycle();
+
+        assertEquals(0xC8, cpu.getRegistersCopy()[0]);
+    }
+
+    @Test
+    @DisplayName("8XY0 - Vx = Vy")
+    void setVx_shouldBeVy() {
+        setUpMemory(0x200, 0x6122);
+        setUpMemory(0x202, 0x8010);
+
+        runCycles(2);
+
+        assertEquals(0x22, cpu.getRegistersCopy()[0]);
     }
 
 
