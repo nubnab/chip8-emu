@@ -182,6 +182,47 @@ public class CPUTest {
         assertEquals(0x22, cpu.getRegistersCopy()[0]);
     }
 
+    @Test
+    @DisplayName("8XY1 - Vx |= Vy, VF = 0")
+    void setVx_shouldBeVxOrVy_and_resetVf() {
+        setUpMemory(0x200, 0x6F22);
+        setUpMemory(0x202, 0x6002);
+        setUpMemory(0x204, 0x6104);
+        setUpMemory(0x206, 0x8011);
+
+        runCycles(4);
+
+        assertEquals(0x2 | 0x4, cpu.getRegistersCopy()[0]);
+        assertEquals(0x0, cpu.getRegistersCopy()[0xF]);
+    }
+
+    @Test
+    @DisplayName("8XY2 - Vx & Vy, VF = 0")
+    void setVx_shouldBeVxAndVy_andResetVf() {
+        setUpMemory(0x200, 0x6F22);
+        setUpMemory(0x202, 0x6002);
+        setUpMemory(0x204, 0x6104);
+        setUpMemory(0x206, 0x8012);
+
+        runCycles(4);
+
+        assertEquals(0x2 & 0x4, cpu.getRegistersCopy()[0]);
+        assertEquals(0x0, cpu.getRegistersCopy()[0xF]);
+    }
+
+    @Test
+    @DisplayName("8XY2 - Vx ^ Vy, VF = 0")
+    void setVx_shouldBeVxXorVy_andResetVf() {
+        setUpMemory(0x200, 0x6F22);
+        setUpMemory(0x202, 0x6002);
+        setUpMemory(0x204, 0x6104);
+        setUpMemory(0x206, 0x8013);
+
+        runCycles(4);
+
+        assertEquals(0x2 ^ 0x4, cpu.getRegistersCopy()[0]);
+        assertEquals(0x0, cpu.getRegistersCopy()[0xF]);
+    }
 
 
 
