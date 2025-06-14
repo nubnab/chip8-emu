@@ -491,6 +491,52 @@ public class CPUTest {
         assertEquals(0x1, cpu.getRegistersCopy()[0xF]);
     }
 
+    @Test
+    @DisplayName("8XYE - Vx = Vy << 1, VF = 0")
+    void setVx_shouldBeVyShiftLeft_shiftedIsVf_VfZero() {
+        setUpMemory(0x200, 0x6125);
+        setUpMemory(0x202, 0x801E);
+
+        runCycles(2);
+
+        assertEquals((0x25 << 1) & 0xFF, cpu.getRegistersCopy()[0]);
+        assertEquals(0x0, cpu.getRegistersCopy()[0xF]);
+    }
+
+    @Test
+    @DisplayName("8XYE - Vx = Vy << 1, VF = 1")
+    void setVx_shouldBeVyShiftLeft_shiftedIsVf_VfOne() {
+        setUpMemory(0x200, 0x61C1);
+        setUpMemory(0x202, 0x801E);
+
+        runCycles(2);
+
+        assertEquals((0xC1 << 1) & 0xFF, cpu.getRegistersCopy()[0]);
+        assertEquals(0x1, cpu.getRegistersCopy()[0xF]);
+    }
+
+    @Test
+    @DisplayName("8XYE - Vx = Vy << 1, VF First Param, VF = 0")
+    void setVx_shouldBeVyShiftLeft_shiftedIsVf_VFFirstParam() {
+        setUpMemory(0x200, 0x6125);
+        setUpMemory(0x202, 0x8F1E);
+
+        runCycles(2);
+
+        assertEquals(0x0, cpu.getRegistersCopy()[0xF]);
+    }
+
+    @Test
+    @DisplayName("8XYE - Vx = Vy << 1, VF Second Param, VF = 0")
+    void setVx_shouldBeVyShiftLeft_shiftedIsVf_VFSecondParam() {
+        setUpMemory(0x200, 0x6F25);
+        setUpMemory(0x202, 0x80FE);
+
+        runCycles(2);
+
+        assertEquals(0x0, cpu.getRegistersCopy()[0xF]);
+    }
+
 
 
 
