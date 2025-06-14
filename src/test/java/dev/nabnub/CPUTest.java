@@ -379,6 +379,42 @@ public class CPUTest {
     }
 
     @Test
+    @DisplayName("8XY6 - Vx = Vy >> 1, VF = 1")
+    void setVx_shouldBeVyShiftRight_shiftedIsVf() {
+        setUpMemory(0x200, 0x6125);
+        setUpMemory(0x202, 0x8016);
+
+        runCycles(2);
+
+        assertEquals((0x25) >> 1, cpu.getRegistersCopy()[0]);
+        assertEquals(0x1, cpu.getRegistersCopy()[0xF]);
+    }
+
+    @Test
+    @DisplayName("8XY6 - Vx = Vy >> 1, VF First Param, VF = 1")
+    void setVx_shouldBeVyShiftRight_shiftedIsVf_VFFirstParam() {
+        setUpMemory(0x200, 0x6125);
+        setUpMemory(0x202, 0x8F16);
+
+        runCycles(2);
+
+        assertEquals(0x1, cpu.getRegistersCopy()[0xF]);
+    }
+
+    @Test
+    @DisplayName("8XY6 - Vx = Vy >> 1, VF Second Param, VF = 1")
+    void setVx_shouldBeVyShiftRight_shiftedIsVf_VFSecondParam() {
+        setUpMemory(0x200, 0x6F25);
+        setUpMemory(0x202, 0x80F6);
+
+        runCycles(2);
+
+        assertEquals((0x25) >> 1, cpu.getRegistersCopy()[0]);
+        assertEquals(0x1, cpu.getRegistersCopy()[0xF]);
+    }
+
+
+    @Test
     @DisplayName("8XY7 - Vx = Vy - Vx, VF = 1")
     void setVx_shouldBeVyMinusVx_noUnderflow() {
         setUpMemory(0x200, 0x6022);
