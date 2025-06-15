@@ -561,6 +561,27 @@ public class CPUTest {
         assertEquals(0x206, cpu.getPC());
     }
 
+    @Test
+    @DisplayName("ANNN - I = NNN")
+    void setIToNNN() {
+        setUpMemory(0x200, 0xA123);
+
+        cpu.cycle();
+
+        assertEquals(0x123, cpu.getIndex());
+    }
+
+    @Test
+    @DisplayName("BNNN - Jump to NNN + V0")
+    void jumpToNNNPlusV0() {
+        setUpMemory(0x200, 0x6023);
+        setUpMemory(0x202, 0xB123);
+
+        runCycles(2);
+
+        assertEquals(0x123 + 0x23, cpu.getPC());
+    }
+
 
 
 

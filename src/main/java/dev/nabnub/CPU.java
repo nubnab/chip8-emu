@@ -401,6 +401,10 @@ public class CPU {
         return sp;
     }
 
+    protected int getIndex() {
+        return index;
+    }
+
     protected int[] getStackCopy() {
         return Arrays.copyOf(this.stack, this.stack.length);
     }
