@@ -537,6 +537,30 @@ public class CPUTest {
         assertEquals(0x0, cpu.getRegistersCopy()[0xF]);
     }
 
+    @Test
+    @DisplayName("9XY0 - Skip if Vx != Vy")
+    void skipIfVxNotEqualsVy_shouldSkip() {
+        setUpMemory(0x200, 0x6025);
+        setUpMemory(0x202, 0x6130);
+        setUpMemory(0x204, 0x901E);
+
+        runCycles(3);
+
+        assertEquals(0x208, cpu.getPC());
+    }
+
+    @Test
+    @DisplayName("9XY0 - Skip if Vx != Vy")
+    void skipIfVxNotEqualsVy_shouldNotSkip() {
+        setUpMemory(0x200, 0x6025);
+        setUpMemory(0x202, 0x6125);
+        setUpMemory(0x204, 0x901E);
+
+        runCycles(3);
+
+        assertEquals(0x206, cpu.getPC());
+    }
+
 
 
 
